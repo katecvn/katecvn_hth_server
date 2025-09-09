@@ -7,6 +7,10 @@ const SALT_ROUNDS = 10
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     static associate(models) {
+      User.belongsTo(models.CustomerGroup, {
+        foreignKey: 'customerGroupId',
+        as: 'customerGroup'
+      })
       User.hasMany(models.AccessLog, { foreignKey: 'user_id', as: 'accessLogs' })
 
       User.belongsToMany(models.Role, { through: models.UserHasRole, foreignKey: 'user_id', as: 'roles' })
@@ -55,6 +59,11 @@ module.exports = (sequelize, DataTypes) => {
       username: DataTypes.STRING,
       password: DataTypes.STRING,
       status: DataTypes.STRING,
+      customerGroupId: {
+        type: DataTypes.BIGINT,
+        allowNull: true
+      },
+
       createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW, field: 'created_at' },
       updatedAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW, field: 'updated_at' },
       deletedAt: { type: DataTypes.DATE, field: 'deleted_at' }
