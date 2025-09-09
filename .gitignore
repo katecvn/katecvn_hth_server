@@ -1,0 +1,9 @@
+/node_modules
+.env
+.htaccess
+package-lock.json
+ecosystem.config.js
+.DS_Store
+.idea
+src/assets/*
+src/public/*

@@ -1,0 +1,7 @@
+module.exports = { 
+    apps: [{ 
+        name: 'pm2_name', 
+        script: 'index.js', 
+        env: { APP_PORT: 'PORT' } 
+    }] 
+}

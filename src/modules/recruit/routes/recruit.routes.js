@@ -1,0 +1,817 @@
+const express = require('express')
+const router = express.Router()
+const { authenticate, authorize } = require('../../../middlewares/JWTAction')
+const RecruitAttributeController = require('../controllers/recruitAttribute.controller')
+const RecruitAttributeValidation = require('../validations/recruitAttribute.validation')
+const RecruitAttributesValueController = require('../controllers/recruitAttributesValue.controller')
+const RecruitAttributesValueValidation = require('../validations/recruitAttributesValue.validation')
+const RecruitAttributeAssignmentController = require('../controllers/recruitAttributeAssignment.controller')
+const RecruitAttributeAssignmentValidation = require('../validations/recruitAttributeAssignment.validation')
+const RecruitPostController = require('../controllers/recruitPost.controller')
+const RecruitPostValidation = require('../validations/recruitPost.validation')
+const CandidateAttributeController = require('../controllers/candidateAttribute.controller')
+const CandidateAttributeValidation = require('../validations/candidateAttribute.validation')
+const CandidateAttributesValueController = require('../controllers/candidateAttributesValue.controller')
+const CandidateAttributesValueValidation = require('../validations/candidateAttributesValue.validation')
+const CandidateAttributesAssignmentController = require('../controllers/candidateAttributesAssignment.controller')
+const CandidateAttributesAssignmentValidation = require('../validations/candidateAttributesAssignment.validation')
+const RecruitCandidateController = require('../controllers/recruitCandidate.controller')
+const RecruitCandidateValidation = require('../validations/recruitCandidate.validation')
+const { validate } = require('../../../middlewares/Validate')
+
+router.post(
+  '/recruit-attribute/create',
+  authenticate,
+  authorize(),
+  RecruitAttributeValidation.create,
+  validate,
+  RecruitAttributeController.createRecruitAttribute
+)
+router.get('/recruit-attribute/shows', authenticate, authorize(), RecruitAttributeController.getAllRecruitAttributes)
+router.get('/recruit-attribute/public/shows', RecruitAttributeController.getAllRecruitAttributes)
+router.get(
+  '/recruit-attribute/show/:id',
+  authenticate,
+  authorize(),
+  RecruitAttributeValidation.show,
+  validate,
+  RecruitAttributeController.getRecruitAttributeById
+)
+router.put(
+  '/recruit-attribute/update/:id',
+  authenticate,
+  authorize(),
+  RecruitAttributeValidation.update,
+  validate,
+  RecruitAttributeController.updateRecruitAttribute
+)
+router.delete(
+  '/recruit-attribute/destroy/:id',
+  authenticate,
+  authorize(),
+  RecruitAttributeValidation.destroy,
+  validate,
+  RecruitAttributeController.deleteRecruitAttribute
+)
+router.get('/recruit-attribute/default-filters', authenticate, authorize(), RecruitAttributeController.getDefaultFilterAttributes)
+router.get('/recruit-attribute/advanced-filters', authenticate, authorize(), RecruitAttributeController.getAdvancedFilterAttributes)
+router.get('/recruit-attribute/required', authenticate, authorize(), RecruitAttributeController.getRequiredAttributes)
+router.get('/recruit-attribute/by-display-priority', authenticate, authorize(), RecruitAttributeController.getAttributesByDisplayPriority)
+router.get('/recruit-attribute/public/by-display-priority', RecruitAttributeController.getAttributesByDisplayPriority)
+router.get('/recruit-attribute/with-values', authenticate, authorize(), RecruitAttributeController.getAttributesWithValues)
+router.get('/recruit-attribute/public/with-values', RecruitAttributeController.getAttributesWithValues)
+router.get('/recruit-attribute/detail-with-values/:id', authenticate, authorize(), RecruitAttributeController.getDetailWithValues)
+router.get('/recruit-attribute/by-code', authenticate, authorize(), RecruitAttributeController.findRecruitAttributeByCode)
+router.get('/recruit-attribute/check-code-exists', authenticate, authorize(), RecruitAttributeController.checkCodeExists)
+router.put(
+  '/recruit-attribute/update-priority/:id',
+  authenticate,
+  authorize(),
+  RecruitAttributeValidation.updateDisplayPriority,
+  validate,
+  RecruitAttributeController.updateDisplayPriority
+)
+router.put(
+  '/recruit-attribute/bulk-update-priority',
+  authenticate,
+  authorize(),
+  RecruitAttributeValidation.bulkUpdateDisplayPriority,
+  validate,
+  RecruitAttributeController.bulkUpdateDisplayPriority
+)
+router.get('/recruit-attribute/search-advanced', authenticate, authorize(), RecruitAttributeController.searchAdvancedRecruitAttributes)
+router.get('/recruit-attribute/count-by-type', authenticate, authorize(), RecruitAttributeController.countRecruitAttributeByType)
+
+router.post(
+  '/recruit-attribute-value/create',
+  authenticate,
+  authorize(),
+  RecruitAttributesValueValidation.create,
+  validate,
+  RecruitAttributesValueController.createRecruitAttributeValue
+)
+router.get('/recruit-attribute-value/shows', authenticate, authorize(), RecruitAttributesValueController.getAllRecruitAttributeValues)
+router.get(
+  '/recruit-attribute-value/show/:id',
+  authenticate,
+  authorize(),
+  RecruitAttributesValueValidation.show,
+  validate,
+  RecruitAttributesValueController.getRecruitAttributeValue
+)
+router.put(
+  '/recruit-attribute-value/update/:id',
+  authenticate,
+  authorize(),
+  RecruitAttributesValueValidation.update,
+  validate,
+  RecruitAttributesValueController.updateRecruitAttributeValue
+)
+router.delete(
+  '/recruit-attribute-value/destroy/:id',
+  authenticate,
+  authorize(),
+  RecruitAttributesValueValidation.destroy,
+  validate,
+  RecruitAttributesValueController.deleteRecruitAttributeValue
+)
+router.get(
+  '/recruit-attribute-value/by-attribute/:attributeId',
+  authenticate,
+  authorize(),
+  RecruitAttributesValueValidation.byAttributeId,
+  validate,
+  RecruitAttributesValueController.getValuesByAttributeId
+)
+router.get(
+  '/recruit-attribute-value/default/:attributeId',
+  authenticate,
+  authorize(),
+  RecruitAttributesValueValidation.byAttributeId,
+  validate,
+  RecruitAttributesValueController.getDefaultValueByAttributeId
+)
+router.post(
+  '/recruit-attribute-value/check-duplicate',
+  authenticate,
+  authorize(),
+  RecruitAttributesValueValidation.checkDuplicateValueInAttribute,
+  validate,
+  RecruitAttributesValueController.checkDuplicateValueInAttribute
+)
+router.post(
+  '/recruit-attribute-value/bulk',
+  authenticate,
+  authorize(),
+  RecruitAttributesValueValidation.bulkCreateOrUpdateValues,
+  validate,
+  RecruitAttributesValueController.bulkCreateOrUpdateValues
+)
+router.get('/recruit-attribute-value/by-attributes', authenticate, authorize(), RecruitAttributesValueController.getValuesByAttributeIds)
+router.delete(
+  '/recruit-attribute-value/by-attribute/:attributeId',
+  authenticate,
+  authorize(),
+  RecruitAttributesValueValidation.byAttributeId,
+  validate,
+  RecruitAttributesValueController.deleteAllValuesByAttributeId
+)
+router.get(
+  '/recruit-attribute-value/count/:attributeId',
+  authenticate,
+  authorize(),
+  RecruitAttributesValueValidation.byAttributeId,
+  validate,
+  RecruitAttributesValueController.countValuesByAttributeId
+)
+router.put(
+  '/recruit-attribute-value/set-default',
+  authenticate,
+  authorize(),
+  RecruitAttributesValueValidation.setDefaultValueForAttribute,
+  validate,
+  RecruitAttributesValueController.setDefaultValueForAttribute
+)
+
+router.post(
+  '/recruit-attribute-assignment/create',
+  authenticate,
+  authorize(),
+  RecruitAttributeAssignmentValidation.create,
+  validate,
+  RecruitAttributeAssignmentController.createRecruitAttributeAssignment
+)
+router.get('/recruit-attribute-assignment/shows', authenticate, authorize(), RecruitAttributeAssignmentController.getAllRecruitAttributeAssignments)
+router.get(
+  '/recruit-attribute-assignment/show/:id',
+  authenticate,
+  authorize(),
+  RecruitAttributeAssignmentValidation.show,
+  validate,
+  RecruitAttributeAssignmentController.getRecruitAttributeAssignmentById
+)
+router.put(
+  '/recruit-attribute-assignment/update/:id',
+  authenticate,
+  authorize(),
+  RecruitAttributeAssignmentValidation.update,
+  validate,
+  RecruitAttributeAssignmentController.updateRecruitAttributeAssignment
+)
+router.delete(
+  '/recruit-attribute-assignment/destroy/:id',
+  authenticate,
+  authorize(),
+  RecruitAttributeAssignmentValidation.remove,
+  validate,
+  RecruitAttributeAssignmentController.deleteRecruitAttributeAssignment
+)
+router.get(
+  '/recruit-attribute-assignment/by-post/:recruitPostId',
+  authenticate,
+  authorize(),
+  RecruitAttributeAssignmentValidation.byRecruitPostId,
+  validate,
+  RecruitAttributeAssignmentController.getAllByRecruitPostId
+)
+router.get(
+  '/recruit-attribute-assignment/by-attribute/:attributeId',
+  authenticate,
+  authorize(),
+  RecruitAttributeAssignmentValidation.byAttributeId,
+  validate,
+  RecruitAttributeAssignmentController.getAssignmentsByAttributeId
+)
+router.post(
+  '/recruit-attribute-assignment/bulk',
+  authenticate,
+  authorize(),
+  RecruitAttributeAssignmentValidation.bulkCreateOrUpdateAssignments,
+  validate,
+  RecruitAttributeAssignmentController.bulkCreateOrUpdateAssignments
+)
+router.delete(
+  '/recruit-attribute-assignment/by-post/:recruitPostId',
+  authenticate,
+  authorize(),
+  RecruitAttributeAssignmentValidation.deleteAllByRecruitPostId,
+  validate,
+  RecruitAttributeAssignmentController.deleteAllByRecruitPostId
+)
+router.get(
+  '/recruit-attribute-assignment/by-posts',
+  authenticate,
+  authorize(),
+  RecruitAttributeAssignmentValidation.getAssignmentsByRecruitPostIds,
+  validate,
+  RecruitAttributeAssignmentController.getAssignmentsByRecruitPostIds
+)
+router.post(
+  '/recruit-attribute-assignment/check-exist',
+  authenticate,
+  authorize(),
+  RecruitAttributeAssignmentValidation.checkAssignmentExist,
+  validate,
+  RecruitAttributeAssignmentController.checkAssignmentExist
+)
+router.delete(
+  '/recruit-attribute-assignment/by-post-attribute',
+  authenticate,
+  authorize(),
+  RecruitAttributeAssignmentValidation.deleteByRecruitPostAndAttributeId,
+  validate,
+  RecruitAttributeAssignmentController.deleteByRecruitPostAndAttributeId
+)
+router.get(
+  '/recruit-attribute-assignment/count/:recruitPostId',
+  authenticate,
+  authorize(),
+  RecruitAttributeAssignmentValidation.countAssignmentsByRecruitPostId,
+  validate,
+  RecruitAttributeAssignmentController.countAssignmentsByRecruitPostId
+)
+router.post(
+  '/recruit-attribute-assignment/filter',
+  authenticate,
+  authorize(),
+  RecruitAttributeAssignmentValidation.filterAssignments,
+  validate,
+  RecruitAttributeAssignmentController.filterAssignments
+)
+
+router.post('/recruit-post/create', authenticate, authorize(), RecruitPostValidation.create, validate, RecruitPostController.createRecruitPost)
+router.post(
+  '/recruit-post/full-create',
+  authenticate,
+  authorize(),
+  RecruitPostValidation.fullCreate,
+  validate,
+  RecruitPostController.fullCreateRecruitPost
+)
+router.put(
+  '/recruit-post/full-update/:id',
+  authenticate,
+  authorize(),
+  RecruitPostValidation.fullUpdate,
+  validate,
+  RecruitPostController.fullUpdateRecruitPost
+)
+router.get('/recruit-post/shows', authenticate, authorize(), RecruitPostController.getAllRecruitPosts)
+router.get('/recruit-post/public/shows', RecruitPostValidation.paginationAndFilter, validate, RecruitPostController.getPublishedRecruitPosts)
+router.get('/recruit-post/show/:id', authenticate, authorize(), RecruitPostValidation.show, validate, RecruitPostController.getRecruitPostById)
+router.get('/recruit-post/public/by-slug/:slug', RecruitPostValidation.showBySlug, validate, RecruitPostController.getRecruitPostBySlug)
+router.put('/recruit-post/update/:id', authenticate, authorize(), RecruitPostValidation.update, validate, RecruitPostController.updateRecruitPost)
+router.delete('/recruit-post/destroy/:id', authenticate, authorize(), RecruitPostValidation.remove, validate, RecruitPostController.deleteRecruitPost)
+router.get(
+  '/recruit-post/published',
+  authenticate,
+  authorize(),
+  RecruitPostValidation.paginationAndFilter,
+  validate,
+  RecruitPostController.getPublishedRecruitPosts
+)
+router.get(
+  '/recruit-post/draft',
+  authenticate,
+  authorize(),
+  RecruitPostValidation.paginationAndFilter,
+  validate,
+  RecruitPostController.getDraftRecruitPosts
+)
+router.post(
+  '/recruit-post/filter',
+  authenticate,
+  authorize(),
+  RecruitPostValidation.paginationAndFilter,
+  validate,
+  RecruitPostController.filterRecruitPosts
+)
+router.post(
+  '/recruit-post/public/filter',
+  authenticate,
+  authorize(),
+  RecruitPostValidation.paginationAndFilter,
+  validate,
+  RecruitPostController.publicFilterRecruitPosts
+)
+router.put(
+  '/recruit-post/bulk-update-status',
+  authenticate,
+  authorize(),
+  RecruitPostValidation.bulkUpdateStatus,
+  validate,
+  RecruitPostController.bulkUpdateStatus
+)
+router.put(
+  '/recruit-post/update-status/:id',
+  authenticate,
+  authorize(),
+  RecruitPostValidation.updateStatus,
+  validate,
+  RecruitPostController.updateStatusRecruitPost
+)
+router.get(
+  '/recruit-post/user/:userId',
+  authenticate,
+  authorize(),
+  RecruitPostValidation.getByUser,
+  validate,
+  RecruitPostController.getRecruitPostsByUser
+)
+router.put(
+  '/recruit-post/extend-deadline/:id',
+  authenticate,
+  authorize(),
+  RecruitPostValidation.extendDeadline,
+  validate,
+  RecruitPostController.extendDeadline
+)
+router.get(
+  '/recruit-post/:postId/count-candidates',
+  authenticate,
+  authorize(),
+  RecruitPostValidation.countCandidates,
+  validate,
+  RecruitPostController.countCandidatesByRecruitPost
+)
+router.get(
+  '/recruit-post/almost-expired',
+  authenticate,
+  authorize(),
+  RecruitPostValidation.getAlmostExpired,
+  validate,
+  RecruitPostController.getAlmostExpiredPosts
+)
+
+router.post(
+  '/candidate-attribute/create',
+  authenticate,
+  authorize(),
+  CandidateAttributeValidation.create,
+  validate,
+  CandidateAttributeController.createCandidateAttribute
+)
+router.get(
+  '/candidate-attribute/shows',
+  authenticate,
+  authorize(),
+  CandidateAttributeValidation.shows,
+  validate,
+  CandidateAttributeController.getAllCandidateAttributes
+)
+router.get('/candidate-attribute/public/shows', CandidateAttributeValidation.shows, validate, CandidateAttributeController.getAllCandidateAttributes)
+router.get(
+  '/candidate-attribute/show/:id',
+  authenticate,
+  authorize(),
+  CandidateAttributeValidation.show,
+  validate,
+  CandidateAttributeController.getCandidateAttribute
+)
+router.get('/candidate-attribute/public/show/:id', CandidateAttributeValidation.show, validate, CandidateAttributeController.getCandidateAttribute)
+router.put(
+  '/candidate-attribute/update/:id',
+  authenticate,
+  authorize(),
+  CandidateAttributeValidation.update,
+  validate,
+  CandidateAttributeController.updateCandidateAttribute
+)
+router.delete(
+  '/candidate-attribute/destroy/:id',
+  authenticate,
+  authorize(),
+  CandidateAttributeValidation.destroy,
+  validate,
+  CandidateAttributeController.deleteCandidateAttribute
+)
+router.put(
+  '/candidate-attribute/update-priority/:id',
+  authenticate,
+  authorize(),
+  CandidateAttributeValidation.updateDisplayPriority,
+  validate,
+  CandidateAttributeController.updateDisplayPriority
+)
+router.put(
+  '/candidate-attribute/bulk-update-priority',
+  authenticate,
+  authorize(),
+  CandidateAttributeValidation.bulkUpdateDisplayPriority,
+  validate,
+  CandidateAttributeController.bulkUpdateDisplayPriority
+)
+router.get(
+  '/candidate-attribute/check-code-exists',
+  authenticate,
+  authorize(),
+  CandidateAttributeValidation.checkCodeExists,
+  validate,
+  CandidateAttributeController.checkCodeExists
+)
+router.get(
+  '/candidate-attribute/detail-with-values/:id',
+  authenticate,
+  authorize(),
+  CandidateAttributeValidation.getWithValues,
+  validate,
+  CandidateAttributeController.getAttributeWithValues
+)
+router.get(
+  '/candidate-attribute/search-advanced',
+  authenticate,
+  authorize(),
+  CandidateAttributeValidation.searchAdvanced,
+  validate,
+  CandidateAttributeController.searchAdvanced
+)
+router.get('/candidate-attribute/by-display-priority', authenticate, authorize(), CandidateAttributeController.getAllAttributesSorted)
+router.get('/candidate-attribute/public/by-display-priority', CandidateAttributeController.getAllAttributesSorted)
+router.get('/candidate-attribute/required', authenticate, authorize(), CandidateAttributeController.getRequiredAttributes)
+router.get(
+  '/candidate-attribute/by-code',
+  authenticate,
+  authorize(),
+  CandidateAttributeValidation.findByCode,
+  validate,
+  CandidateAttributeController.findAttributeByCode
+)
+
+router.get('/candidate-attributes-value/shows', authenticate, authorize(), CandidateAttributesValueController.getAllCandidateAttributesValues)
+router.get(
+  '/candidate-attributes-value/show/:id',
+  authenticate,
+  authorize(),
+  CandidateAttributesValueValidation.show,
+  validate,
+  CandidateAttributesValueController.getCandidateAttributesValueById
+)
+router.post(
+  '/candidate-attributes-value/create',
+  authenticate,
+  authorize(),
+  CandidateAttributesValueValidation.create,
+  validate,
+  CandidateAttributesValueController.createCandidateAttributesValue
+)
+router.put(
+  '/candidate-attributes-value/update/:id',
+  authenticate,
+  authorize(),
+  CandidateAttributesValueValidation.update,
+  validate,
+  CandidateAttributesValueController.updateCandidateAttributesValue
+)
+router.delete(
+  '/candidate-attributes-value/destroy/:id',
+  authenticate,
+  authorize(),
+  CandidateAttributesValueValidation.destroy,
+  validate,
+  CandidateAttributesValueController.deleteCandidateAttributesValue
+)
+router.get(
+  '/candidate-attributes-value/by-attribute/:attributeId',
+  authenticate,
+  authorize(),
+  CandidateAttributesValueValidation.byAttributeId,
+  validate,
+  CandidateAttributesValueController.getValuesByAttributeId
+)
+router.get(
+  '/candidate-attributes-value/default/:attributeId',
+  authenticate,
+  authorize(),
+  CandidateAttributesValueValidation.defaultByAttributeId,
+  validate,
+  CandidateAttributesValueController.getDefaultValueByAttributeId
+)
+router.put(
+  '/candidate-attributes-value/set-default',
+  authenticate,
+  authorize(),
+  CandidateAttributesValueValidation.setDefaultValueForAttribute,
+  validate,
+  CandidateAttributesValueController.setDefaultValueForAttribute
+)
+router.post(
+  '/candidate-attributes-value/check-duplicate',
+  authenticate,
+  authorize(),
+  CandidateAttributesValueValidation.checkDuplicateValueInAttribute,
+  validate,
+  CandidateAttributesValueController.checkDuplicateValueInAttribute
+)
+router.delete(
+  '/candidate-attributes-value/by-attribute/:attributeId',
+  authenticate,
+  authorize(),
+  CandidateAttributesValueValidation.deleteAllByAttributeId,
+  validate,
+  CandidateAttributesValueController.deleteAllValuesByAttributeId
+)
+router.post(
+  '/candidate-attributes-value/bulk',
+  authenticate,
+  authorize(),
+  CandidateAttributesValueValidation.bulkCreateOrUpdateValues,
+  validate,
+  CandidateAttributesValueController.bulkCreateOrUpdateValues
+)
+router.get(
+  '/candidate-attributes-value/count/:attributeId',
+  authenticate,
+  authorize(),
+  CandidateAttributesValueValidation.countByAttributeId,
+  validate,
+  CandidateAttributesValueController.countValuesByAttributeId
+)
+router.get(
+  '/candidate-attributes-value/by-attributes',
+  authenticate,
+  authorize(),
+  CandidateAttributesValueValidation.byAttributeIds,
+  validate,
+  CandidateAttributesValueController.getValuesByAttributeIds
+)
+
+router.post(
+  '/candidate-attribute-assignment/create',
+  authenticate,
+  authorize(),
+  CandidateAttributesAssignmentValidation.validateCreate,
+  validate,
+  CandidateAttributesAssignmentController.createCandidateAttributeAssignment
+)
+router.get(
+  '/candidate-attribute-assignment/shows',
+  authenticate,
+  authorize(),
+  CandidateAttributesAssignmentController.getAllCandidateAttributeAssignments
+)
+router.get(
+  '/candidate-attribute-assignment/show/:id',
+  authenticate,
+  authorize(),
+  CandidateAttributesAssignmentValidation.validateGetOne,
+  validate,
+  CandidateAttributesAssignmentController.getCandidateAttributeAssignmentById
+)
+router.put(
+  '/candidate-attribute-assignment/update/:id',
+  authenticate,
+  authorize(),
+  CandidateAttributesAssignmentValidation.validateUpdate,
+  validate,
+  CandidateAttributesAssignmentController.updateCandidateAttributeAssignment
+)
+router.delete(
+  '/candidate-attribute-assignment/destroy/:id',
+  authenticate,
+  authorize(),
+  CandidateAttributesAssignmentValidation.validateDelete,
+  validate,
+  CandidateAttributesAssignmentController.deleteCandidateAttributeAssignment
+)
+router.get(
+  '/candidate-attribute-assignment/by-candidate/:candidateId',
+  authenticate,
+  authorize(),
+  CandidateAttributesAssignmentValidation.byCandidateId,
+  validate,
+  CandidateAttributesAssignmentController.getAssignmentsByCandidateId
+)
+router.get(
+  '/candidate-attribute-assignment/by-attribute/:attributeId',
+  authenticate,
+  authorize(),
+  CandidateAttributesAssignmentValidation.byAttributeId,
+  validate,
+  CandidateAttributesAssignmentController.getAssignmentsByAttributeId
+)
+router.post(
+  '/candidate-attribute-assignment/bulk',
+  authenticate,
+  authorize(),
+  CandidateAttributesAssignmentValidation.bulkCreateOrUpdateAssignments,
+  validate,
+  CandidateAttributesAssignmentController.bulkCreateOrUpdateAssignments
+)
+router.delete(
+  '/candidate-attribute-assignment/by-candidate/:candidateId',
+  authenticate,
+  authorize(),
+  CandidateAttributesAssignmentValidation.deleteAllByCandidateId,
+  validate,
+  CandidateAttributesAssignmentController.deleteAllByCandidateId
+)
+router.post(
+  '/candidate-attribute-assignment/check-exist',
+  authenticate,
+  authorize(),
+  CandidateAttributesAssignmentValidation.checkAssignmentExist,
+  validate,
+  CandidateAttributesAssignmentController.checkAssignmentExist
+)
+router.get(
+  '/candidate-attribute-assignment/by-candidates',
+  authenticate,
+  authorize(),
+  CandidateAttributesAssignmentValidation.byCandidateIds,
+  validate,
+  CandidateAttributesAssignmentController.getAssignmentsByCandidateIds
+)
+router.delete(
+  '/candidate-attribute-assignment/by-candidate-attribute',
+  authenticate,
+  authorize(),
+  CandidateAttributesAssignmentValidation.deleteByCandidateAndAttributeId,
+  validate,
+  CandidateAttributesAssignmentController.deleteByCandidateAndAttributeId
+)
+router.get(
+  '/candidate-attribute-assignment/count/:candidateId',
+  authenticate,
+  authorize(),
+  CandidateAttributesAssignmentValidation.countByCandidateId,
+  validate,
+  CandidateAttributesAssignmentController.countAssignmentsByCandidateId
+)
+router.post(
+  '/candidate-attribute-assignment/filter',
+  authenticate,
+  authorize(),
+  CandidateAttributesAssignmentValidation.filterAssignments,
+  validate,
+  CandidateAttributesAssignmentController.filterAssignments
+)
+
+router.post(
+  '/recruit-candidate/public/full-create',
+  RecruitCandidateValidation.fullCreate,
+  validate,
+  RecruitCandidateController.fullCreateRecruitCandidate
+)
+router.put(
+  '/recruit-candidate/full-update/:id',
+  authenticate,
+  authorize(),
+  RecruitCandidateValidation.fullUpdate,
+  validate,
+  RecruitCandidateController.fullUpdateRecruitCandidate
+)
+router.post(
+  '/recruit-candidate/create',
+  authenticate,
+  authorize(),
+  RecruitCandidateValidation.create,
+  validate,
+  RecruitCandidateController.createRecruitCandidate
+)
+router.get('/recruit-candidate/shows', authenticate, authorize(), RecruitCandidateController.getAllRecruitCandidates)
+router.get(
+  '/recruit-candidate/show/:id',
+  authenticate,
+  authorize(),
+  RecruitCandidateValidation.show,
+  validate,
+  RecruitCandidateController.getRecruitCandidateById
+)
+router.put(
+  '/recruit-candidate/update/:id',
+  authenticate,
+  authorize(),
+  RecruitCandidateValidation.update,
+  validate,
+  RecruitCandidateController.updateRecruitCandidate
+)
+router.delete(
+  '/recruit-candidate/destroy/:id',
+  authenticate,
+  authorize(),
+  RecruitCandidateValidation.remove,
+  validate,
+  RecruitCandidateController.deleteRecruitCandidate
+)
+router.get(
+  '/recruit-candidate/by-recruit-post/:recruitPostId',
+  authenticate,
+  authorize(),
+  RecruitCandidateValidation.byRecruitPostId,
+  validate,
+  RecruitCandidateController.getRecruitCandidatesByRecruitPost
+)
+router.get(
+  '/recruit-candidate/by-user/:userId',
+  authenticate,
+  authorize(),
+  RecruitCandidateValidation.byUserId,
+  validate,
+  RecruitCandidateController.getRecruitCandidatesByUser
+)
+router.put(
+  '/recruit-candidate/update-status/:id',
+  authenticate,
+  authorize(),
+  RecruitCandidateValidation.updateStatus,
+  validate,
+  RecruitCandidateController.updateRecruitCandidateStatus
+)
+router.put(
+  '/recruit-candidate/bulk-update-status',
+  authenticate,
+  authorize(),
+  RecruitCandidateValidation.bulkUpdateStatus,
+  validate,
+  RecruitCandidateController.bulkUpdateRecruitCandidateStatus
+)
+router.post(
+  '/recruit-candidate/restore/:id',
+  authenticate,
+  authorize(),
+  RecruitCandidateValidation.restore,
+  validate,
+  RecruitCandidateController.restoreRecruitCandidate
+)
+router.delete(
+  '/recruit-candidate/permanently-delete/:id',
+  authenticate,
+  authorize(),
+  RecruitCandidateValidation.permanentlyDelete,
+  validate,
+  RecruitCandidateController.permanentlyDeleteRecruitCandidate
+)
+router.get(
+  '/recruit-candidate/:recruitPostId/count',
+  authenticate,
+  authorize(),
+  RecruitCandidateValidation.countCandidates,
+  validate,
+  RecruitCandidateController.countRecruitCandidatesByRecruitPost
+)
+router.get(
+  '/recruit-candidate/search',
+  authenticate,
+  authorize(),
+  RecruitCandidateValidation.search,
+  validate,
+  RecruitCandidateController.searchRecruitCandidates
+)
+router.post(
+  '/recruit-candidate/filter',
+  authenticate,
+  authorize(),
+  RecruitCandidateValidation.filter,
+  validate,
+  RecruitCandidateController.filterRecruitCandidates
+)
+router.get(
+  '/recruit-candidate/:recruitPostId/count-by-status',
+  authenticate,
+  authorize(),
+  RecruitCandidateValidation.countByStatus,
+  validate,
+  RecruitCandidateController.countRecruitCandidateByStatus
+)
+
+module.exports = router
