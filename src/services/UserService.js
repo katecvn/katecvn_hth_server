@@ -75,32 +75,70 @@ const getUserById = async ({ id }) => {
   }
 }
 
-const create = async ({ role_id, code, full_name, date_of_birth, gender, email, phone_number, avatar_url, address, username, password }) => {
+const create = async ({
+  role_id,
+  code,
+  full_name,
+  date_of_birth,
+  gender,
+  email,
+  phone_number,
+  avatar_url,
+  address,
+  username,
+  password,
+  customerGroupId
+}) => {
+  const transaction = await db.sequelize.transaction()
   try {
-    const user = await db.User.create({
-      code,
-      full_name,
-      date_of_birth,
-      gender,
-      email,
-      phone_number,
-      avatar_url,
-      address,
-      username,
-      password,
-      user_type: AUTH_PROVIDER.ADMIN
-    })
+    let assignedRoleId = role_id
+    if (!assignedRoleId) {
+      const defaultRole = await db.Role.findOne({
+        where: { name: 'User' }
+      })
+      if (!defaultRole) {
+        throw new ServiceException(
+          'Không tìm thấy role mặc định User',
+          STATUS_CODE.BAD_REQUEST
+        )
+      }
+      assignedRoleId = defaultRole.id
+    }
 
-    await db.UserHasRole.create({
-      user_id: user.id,
-      role_id
-    })
+    const user = await db.User.create(
+      {
+        code,
+        full_name,
+        date_of_birth,
+        gender,
+        email,
+        phone_number,
+        avatar_url,
+        address,
+        username,
+        password,
+        customerGroupId: customerGroupId || null,
+        user_type: role_id ? 'admin' : 'customer'
+      },
+      { transaction }
+    )
 
+    await db.UserHasRole.create(
+      {
+        user_id: user.id,
+        role_id: assignedRoleId
+      },
+      { transaction }
+    )
+
+    await transaction.commit()
     return user
   } catch (error) {
+    await transaction.rollback()
     throw new ServiceException(error.message, STATUS_CODE.INTERNAL_SERVER_ERROR)
   }
 }
+
 
 const shows = async ({ page = 1, limit = 9999, type }) => {
   try {

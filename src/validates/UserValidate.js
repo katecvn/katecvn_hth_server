@@ -10,7 +10,7 @@ const validateBody = [
   body('role_id').custom(async (role_id, { req }) => {
     const user = await UserService.getUserById({ id: req.params.id })
 
-    if (user?.user_type === 'customer') {
+    if (user?.user_type === 'customer' || req.body.user_type === 'customer') {
       // Bỏ qua validate nếu là customer
       return true
     }

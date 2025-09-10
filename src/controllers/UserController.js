@@ -7,10 +7,21 @@ const bcrypt = require('bcryptjs')
 
 const create = async (req, res) => {
   try {
-    const { role_id, code, full_name, date_of_birth, gender, email, phone_number, avatar_url, address, username, password, rePassword } = {
-      ...req.query,
-      ...req.body
-    }
+    const {
+      role_id,
+      code,
+      full_name,
+      date_of_birth,
+      gender,
+      email,
+      phone_number,
+      avatar_url,
+      address,
+      username,
+      password,
+      user_type,
+      customerGroupId
+    } = { ...req.query, ...req.body }
 
     const createUser = await UserService.create({
       role_id,
@@ -23,14 +34,21 @@ const create = async (req, res) => {
       avatar_url,
       address,
       username,
-      password
+      password,
+      user_type,
+      customerGroupId
     })
 
-    sendResponse(res, { status: STATUS_CODE.OK, messages: message.createdSuccessfully, data: createUser })
+    sendResponse(res, {
+      status: STATUS_CODE.OK,
+      messages: message.createdSuccessfully,
+      data: createUser
+    })
   } catch (error) {
     sendResponse(res, { status: error.status, messages: error.message })
   }
 }
+
 
 const show = async (req, res) => {
   try {
@@ -58,7 +76,19 @@ const shows = async (req, res) => {
 
 const update = async (req, res) => {
   try {
-    const { role_id, code, full_name, date_of_birth, gender, email, phone_number, avatar_url, address, username } = { ...req.query, ...req.body }
+    const {
+      role_id,
+      code,
+      full_name,
+      date_of_birth,
+      gender,
+      email,
+      phone_number,
+      avatar_url,
+      address,
+      username,
+      customerGroupId
+    } = { ...req.query, ...req.body }
 
     await UserService.update(req.params.id, {
       role_id,
@@ -70,14 +100,19 @@ const update = async (req, res) => {
       phone_number,
       avatar_url,
       address,
-      username
+      username,
+      customerGroupId
     })
 
-    return sendResponse(res, { status: STATUS_CODE.OK, messages: message.updatedSuccessfully })
+    return sendResponse(res, {
+      status: STATUS_CODE.OK,
+      messages: message.updatedSuccessfully
+    })
   } catch (e) {
     sendResponse(res, { status: e.status, messages: e.message })
   }
 }
+
 
 const destroy = async (req, res) => {
   try {
