@@ -21,7 +21,10 @@ const modulePaths = [
   '../modules/contact/models',
   '../modules/wish_list/models',
   '../modules/product_variant/models',
-  '../modules/recruit/models'
+  '../modules/recruit/models',
+  '../modules/customer_group/models',
+  '../modules/customer_group_discount/models',
+  '../modules/customer_group_discount_history/models',
 ] // Có thể thêm module khác tại đây
 
 modulePaths.forEach((modulePath) => {
