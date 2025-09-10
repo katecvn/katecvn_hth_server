@@ -98,7 +98,29 @@ const PERMISSIONS = {
   SHIPPING_VIEW: 'shipping_view',
   SHIPPING_UPDATE: 'shipping_update',
   SHIPPING_DELETE: 'shipping_delete',
-  SHIPPING_MANAGE_STATUS: 'shipping_manage_status'
+  SHIPPING_MANAGE_STATUS: 'shipping_manage_status',
+
+  // Nhóm khách hàng
+  CUSTOMER_GROUP: 'customer_group',
+  CUSTOMER_GROUP_CREATE: 'customer_group_create',
+  CUSTOMER_GROUP_VIEW: 'customer_group_view',
+  CUSTOMER_GROUP_DETAIL: 'customer_group_detail',
+  CUSTOMER_GROUP_UPDATE: 'customer_group_update',
+  CUSTOMER_GROUP_DELETE: 'customer_group_delete',
+
+  // Giảm giá theo nhóm khách hàng
+  CUSTOMER_GROUP_DISCOUNT: 'customer_group_discount',
+  CUSTOMER_GROUP_DISCOUNT_CREATE: 'customer_group_discount_create',
+  CUSTOMER_GROUP_DISCOUNT_VIEW: 'customer_group_discount_view',
+  CUSTOMER_GROUP_DISCOUNT_DETAIL: 'customer_group_discount_detail',
+  CUSTOMER_GROUP_DISCOUNT_UPDATE: 'customer_group_discount_update',
+  CUSTOMER_GROUP_DISCOUNT_DELETE: 'customer_group_discount_delete',
+
+  // Lịch sử giảm giá theo nhóm khách hàng
+  CUSTOMER_GROUP_DISCOUNT_HISTORY: 'customer_group_discount_history',
+  CUSTOMER_GROUP_DISCOUNT_HISTORY_VIEW: 'customer_group_discount_history_view',
+  CUSTOMER_GROUP_DISCOUNT_HISTORY_DETAIL: 'customer_group_discount_history_detail'
+  
 }
 
 module.exports = PERMISSIONS
