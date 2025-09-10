@@ -1,6 +1,6 @@
 const { STATUS_CODE } = require('../../../constants')
 const http = require('../../../utils/http')
-const CustomerGroupDiscountService = require('../services/customer-group-discount.service')
+const CustomerGroupDiscountService = require('../services/customerGroupDiscount.service')
 
 const getDiscounts = async (req, res, next) => {
   const { page, limit, keyword } = req.query

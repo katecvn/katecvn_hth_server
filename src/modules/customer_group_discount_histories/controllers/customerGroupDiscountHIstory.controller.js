@@ -1,6 +1,6 @@
 const { STATUS_CODE } = require('../../../constants')
 const http = require('../../../utils/http')
-const CustomerGroupDiscountHistoryService = require('../services/customer-group-discount-history.service')
+const CustomerGroupDiscountHistoryService = require('../services/customerGroupDiscoutHistory.service')
 
 const getHistories = async (req, res, next) => {
   const { page, limit, customerGroupId } = req.query

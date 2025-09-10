@@ -42,6 +42,9 @@ const AttributeRoutes = require('../modules/product_variant/routes/attribute.rou
 const SpecificationRoutes = require('../modules/product_variant/routes/specification.routes')
 const ProductVariantRoutes = require('../modules/product_variant/routes/product.variant.routes')
 const SitemapRoutes = require('../modules/sitemap/routes/sitemap.routes')
+const CustomerGroupRoutes = require('../modules/customer_group/routes/customerGroup.routes')
+const CustomerGroupDiscountRoutes = require('../modules/customer_group_discount/routes/customerGroupDiscount.routes')
+const CustomerGroupDiscroutHistoryRoutes = require('../modules/customer_group_discount_histories/routes/customerGroupDiscountHistory.routes')
 
 const { forgotPasswordValidate } = require('../validates/ForgotPasswordValidate')
 const { resetPasswordValidate } = require('../validates/ResetPasswordValidate')
@@ -132,5 +135,8 @@ router.use(AttributeRoutes)
 router.use(SpecificationRoutes)
 router.use(ProductVariantRoutes)
 router.use(SitemapRoutes)
+router.use(CustomerGroupRoutes)
+router.use(CustomerGroupDiscountRoutes)
+router.use(CustomerGroupDiscroutHistoryRoutes)
 
 module.exports = router

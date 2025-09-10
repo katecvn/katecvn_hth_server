@@ -1,6 +1,6 @@
 const express = require('express')
-const CustomerGroupDiscountController = require('../controllers/customer-group-discount.controller')
-const CustomerGroupDiscountValidate = require('../validations/customer-group-discount.validation')
+const CustomerGroupDiscountController = require('../controllers/customerGroupDiscount.controller')
+const CustomerGroupDiscountValidate = require('../validations/customerGroupDiscount.validation')
 const { authenticate, authorize } = require('../../../middlewares/JWTAction')
 const { validate } = require('../../../middlewares/Validate')
 const PERMISSIONS = require('../../../constants/permission')
