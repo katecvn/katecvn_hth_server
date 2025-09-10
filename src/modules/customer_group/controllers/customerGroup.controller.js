@@ -23,9 +23,9 @@ const getCustomerGroupById = async (req, res, next) => {
 }
 
 const createCustomerGroup = async (req, res, next) => {
-  const { name } = req.body
+  const { name, description, type } = req.body
   try {
-    await CustomerGroupService.createCustomerGroup({ name })
+    await CustomerGroupService.createCustomerGroup({ name, description, type })
     return http.json(res, 'Thành công', STATUS_CODE.OK)
   } catch (error) {
     next(error)
@@ -34,9 +34,9 @@ const createCustomerGroup = async (req, res, next) => {
 
 const updateCustomerGroup = async (req, res, next) => {
   const { id } = req.params
-  const { name } = req.body
+  const { name, description, type } = req.body
   try {
-    await CustomerGroupService.updateCustomerGroup(id, { name })
+    await CustomerGroupService.updateCustomerGroup(id, { name, description, type })
     return http.json(res, 'Thành công', STATUS_CODE.OK)
   } catch (error) {
     next(error)
@@ -58,5 +58,5 @@ module.exports = {
   getCustomerGroupById,
   createCustomerGroup,
   updateCustomerGroup,
-  deleteCustomerGroup
+  deleteCustomerGroup,
 }

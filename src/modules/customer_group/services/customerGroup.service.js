@@ -7,7 +7,8 @@ const getCustomerGroups = async (data) => {
 
   if (keyword) {
     conditions[db.Sequelize.Op.or] = [
-      { name: { [db.Sequelize.Op.like]: `%${keyword}%` } }
+      { name: { [db.Sequelize.Op.like]: `%${keyword}%` } },
+      { description: { [db.Sequelize.Op.like]: `%${keyword}%` } },
     ]
   }
 
@@ -15,14 +16,15 @@ const getCustomerGroups = async (data) => {
     offset,
     limit,
     where: conditions,
-    distinct: true
+    distinct: true,
+    order: [['createdAt', 'DESC']],
   })
 
   return {
     totalItems: count,
     totalPages: Math.ceil(count / limit),
     currentPage: page,
-    groups
+    groups,
   }
 }
 
@@ -31,10 +33,13 @@ const getCustomerGroupById = async (id) => {
 }
 
 const createCustomerGroup = async (data) => {
-  const { name } = data
+  const { name, description, type } = data
   const transaction = await db.sequelize.transaction()
   try {
-    const group = await db.CustomerGroup.create({ name }, { transaction })
+    const group = await db.CustomerGroup.create(
+      { name, description, type },
+      { transaction },
+    )
     await transaction.commit()
     return group
   } catch (error) {
@@ -49,7 +54,14 @@ const updateCustomerGroup = async (id, data) => {
 
   const transaction = await db.sequelize.transaction()
   try {
-    await group.update({ name: data.name }, { transaction })
+    await group.update(
+      {
+        name: data.name,
+        description: data.description,
+        type: data.type || group.type, // giữ nguyên nếu không truyền
+      },
+      { transaction },
+    )
     await transaction.commit()
     return group
   } catch (error) {
@@ -78,5 +90,5 @@ module.exports = {
   getCustomerGroupById,
   createCustomerGroup,
   updateCustomerGroup,
-  deleteCustomerGroup
+  deleteCustomerGroup,
 }
