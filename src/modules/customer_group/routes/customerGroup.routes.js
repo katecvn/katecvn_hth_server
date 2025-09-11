@@ -1,5 +1,5 @@
 const express = require('express')
-const CustomerGroupController = require('../controllers/CustomerGroup.controller')
+const CustomerGroupController = require('../controllers/customerGroup.controller')
 const CustomerGroupValidate = require('../validations/CustomerGroup.validation')
 const { authenticate, authorize } = require('../../../middlewares/JWTAction')
 const { validate } = require('../../../middlewares/Validate')
@@ -12,6 +12,13 @@ router.get(
   authenticate,
   authorize([PERMISSIONS.CUSTOMER_GROUP_VIEW]),
   CustomerGroupController.getCustomerGroups
+)
+
+router.get(
+  '/customer-group/shows-without-discount',
+  authenticate,
+  authorize([PERMISSIONS.CUSTOMER_GROUP_VIEW]),
+  CustomerGroupController.getCustomerGroupsWithoutDiscount
 )
 
 router.get(

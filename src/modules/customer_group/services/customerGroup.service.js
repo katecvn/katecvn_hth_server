@@ -28,6 +28,44 @@ const getCustomerGroups = async (data) => {
   }
 }
 
+const getCustomerGroupsWithoutDiscount = async (data) => {
+  const { page = 1, limit = 20, keyword } = data
+  const offset = (page - 1) * limit
+  const conditions = {}
+
+  if (keyword) {
+    conditions[db.Sequelize.Op.or] = [
+      { name: { [db.Sequelize.Op.like]: `%${keyword}%` } },
+      { description: { [db.Sequelize.Op.like]: `%${keyword}%` } },
+    ]
+  }
+
+  const { count, rows: groups } = await db.CustomerGroup.findAndCountAll({
+    offset,
+    limit,
+    where: conditions,
+    distinct: true,
+    order: [['createdAt', 'DESC']],
+    include: [
+      {
+        model: db.CustomerGroupDiscount,
+        as: 'discounts',
+        required: false,
+      },
+    ],
+    having: db.Sequelize.literal('COUNT(`discounts`.`id`) = 0'),
+    group: ['CustomerGroup.id'],
+  })
+
+  return {
+    totalItems: count.length ? count.length : 0,
+    totalPages: Math.ceil((count.length ? count.length : 0) / limit),
+    currentPage: page,
+    groups,
+  }
+}
+
+
 const getCustomerGroupById = async (id) => {
   return await db.CustomerGroup.findByPk(id)
 }
@@ -86,6 +124,7 @@ const deleteCustomerGroup = async (id) => {
 }
 
 module.exports = {
+  getCustomerGroupsWithoutDiscount,
   getCustomerGroups,
   getCustomerGroupById,
   createCustomerGroup,

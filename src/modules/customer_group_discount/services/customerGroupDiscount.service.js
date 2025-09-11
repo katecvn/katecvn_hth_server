@@ -1,3 +1,6 @@
+const { STATUS_CODE } = require('../../../constants')
+const { message } = require('../../../constants/message')
+const ServiceException = require('../../../exceptions/ServiceException')
 const db = require('../../../models')
 
 /**
@@ -16,14 +19,14 @@ const getDiscounts = async ({ page = 1, limit = 20, keyword }) => {
     include: [{ model: db.CustomerGroup, as: 'customerGroup' }],
     offset,
     limit,
-    distinct: true
+    distinct: true,
   })
 
   return {
     totalItems: count,
     totalPages: Math.ceil(count / limit),
     currentPage: page,
-    discounts: rows
+    discounts: rows,
   }
 }
 
@@ -32,7 +35,7 @@ const getDiscounts = async ({ page = 1, limit = 20, keyword }) => {
  */
 const getDiscountById = async (id) => {
   return await db.CustomerGroupDiscount.findByPk(id, {
-    include: [{ model: db.CustomerGroup, as: 'customerGroup' }]
+    include: [{ model: db.CustomerGroup, as: 'customerGroup' }],
   })
 }
 
@@ -40,12 +43,28 @@ const getDiscountById = async (id) => {
  * Tạo giảm giá mới cho nhóm
  */
 const createDiscount = async (data, userId) => {
-  const { customerGroupId, discountTliype, discountValue } = data
-  const transaction = await db.sequeze.transaction()
+  const { customerGroupId, discountType, discountValue } = data
+  const transaction = await db.sequelize.transaction()
 
   try {
+    const existing = await db.CustomerGroupDiscount.findOne({
+      where: { customerGroupId, status: 'active' },
+      transaction,
+    })
+    if (existing) {
+      throw new ServiceException(
+        { message: message.isExisted },
+        STATUS_CODE.UNPROCESSABLE_ENTITY
+      )
+    }
+
     const discount = await db.CustomerGroupDiscount.create(
-      { customerGroupId, discountType, discountValue, status: 'active' },
+      {
+        customerGroupId,
+        discountType: String(discountType),
+        discountValue: Number(discountValue),
+        status: 'active',
+      },
       { transaction }
     )
 
@@ -54,9 +73,10 @@ const createDiscount = async (data, userId) => {
         customerGroupId,
         oldType: null,
         oldValue: null,
-        newType: discountType,
-        newValue: discountValue,
-        changedBy: userId
+        newType: String(discountType),
+        newValue: Number(discountValue),
+        updatedBy: userId,
+        updatedAt: new Date(),
       },
       { transaction }
     )
@@ -65,16 +85,22 @@ const createDiscount = async (data, userId) => {
     return discount
   } catch (error) {
     await transaction.rollback()
-    throw new Error(error.message)
+    throw error
   }
 }
+
 
 /**
  * Cập nhật giảm giá hiện hành
  */
 const updateDiscount = async (id, data, userId) => {
   const discount = await db.CustomerGroupDiscount.findByPk(id)
-  if (!discount) throw new Error('Không tìm thấy giảm giá nhóm khách hàng')
+  if (!discount) {
+    throw new ServiceException(
+      { message: message.notFound },
+      STATUS_CODE.NOT_FOUND
+    )
+  }
 
   const transaction = await db.sequelize.transaction()
   try {
@@ -83,8 +109,8 @@ const updateDiscount = async (id, data, userId) => {
 
     await discount.update(
       {
-        discountType: data.discountType,
-        discountValue: data.discountValue
+        discountType: String(data.discountType),
+        discountValue: Number(data.discountValue),
       },
       { transaction }
     )
@@ -94,9 +120,10 @@ const updateDiscount = async (id, data, userId) => {
         customerGroupId: discount.customerGroupId,
         oldType,
         oldValue,
-        newType: data.discountType,
-        newValue: data.discountValue,
-        changedBy: userId
+        newType: String(data.discountType),
+        newValue: Number(data.discountValue),
+        updatedBy: userId,
+        updatedAt: new Date(),
       },
       { transaction }
     )
@@ -105,9 +132,11 @@ const updateDiscount = async (id, data, userId) => {
     return discount
   } catch (error) {
     await transaction.rollback()
-    throw new Error(error.message)
+    throw error
   }
 }
+
+
 
 /**
  * Xóa (ngưng) giảm giá
@@ -118,19 +147,20 @@ const deleteDiscount = async (id, userId) => {
 
   const transaction = await db.sequelize.transaction()
   try {
-    await discount.update({ status: 'inactive' }, { transaction })
-
     await db.CustomerGroupDiscountHistory.create(
       {
         customerGroupId: discount.customerGroupId,
         oldType: discount.discountType,
         oldValue: discount.discountValue,
-        newType: discount.discountType,
-        newValue: discount.discountValue,
-        changedBy: userId
+        newType: null,
+        newValue: null,
+        updatedBy: userId,
+        updatedAt: new Date(),
       },
       { transaction }
     )
+
+    await discount.destroy({ transaction })
 
     await transaction.commit()
     return true
@@ -140,10 +170,11 @@ const deleteDiscount = async (id, userId) => {
   }
 }
 
+
 module.exports = {
   getDiscounts,
   getDiscountById,
   createDiscount,
   updateDiscount,
-  deleteDiscount
+  deleteDiscount,
 }

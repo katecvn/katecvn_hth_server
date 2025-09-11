@@ -9,6 +9,11 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'customerGroupId',
         as: 'users'
       })
+
+      CustomerGroup.hasMany(models.CustomerGroupDiscount, {
+        foreignKey: 'customerGroupId',
+        as: 'discounts'
+      })
     }
   }
 
@@ -22,7 +27,6 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: 'organization'
       },
-
       createdAt: { type: DataTypes.DATE },
       updatedAt: { type: DataTypes.DATE }
     },

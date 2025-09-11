@@ -70,18 +70,40 @@ const logout = async ({ access_token }) => {
   }
 }
 
-const register = async ({ email = email || '', password, username, fullName }) => {
+const register = async ({ email = '', password, username, fullName }) => {
+  const transaction = await db.sequelize.transaction()
   try {
-    return await db.User.create({
-      email,
-      password,
-      username,
-      full_name: fullName
-    })
+    const user = await db.User.create(
+      {
+        email,
+        password,
+        username,
+        full_name: fullName,
+        user_type: 'customer'
+      },
+      { transaction }
+    )
+
+    const defaultRole = await db.Role.findOne({ where: { name: 'User' } })
+
+    if (defaultRole) {
+      await db.UserHasRole.create(
+        {
+          user_id: user.id,
+          role_id: defaultRole.id
+        },
+        { transaction }
+      )
+    }
+
+    await transaction.commit()
+    return user
   } catch (error) {
+    await transaction.rollback()
     throw new Error(error.message)
   }
 }
+
 
 const getAccessLogByToken = async ({ access_token }) => {
   return await db.AccessLog.findOne({ where: { access_token } })
