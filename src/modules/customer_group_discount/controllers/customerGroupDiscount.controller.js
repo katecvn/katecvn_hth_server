@@ -23,11 +23,14 @@ const getDiscountById = async (req, res, next) => {
 }
 
 const createDiscount = async (req, res, next) => {
-  const { customerGroupId, discountType, discountValue } = req.body
+  const { customerGroupId, discountType, discountValue, status } = req.body
   const userId = req.user.id
 
   try {
-    await CustomerGroupDiscountService.createDiscount({ customerGroupId, discountType, discountValue }, userId)
+    await CustomerGroupDiscountService.createDiscount(
+      { customerGroupId, discountType, discountValue, status },
+      userId
+    )
     return http.json(res, 'Thành công', STATUS_CODE.OK)
   } catch (error) {
     next(error)
@@ -36,11 +39,15 @@ const createDiscount = async (req, res, next) => {
 
 const updateDiscount = async (req, res, next) => {
   const { id } = req.params
-  const { discountType, discountValue } = req.body
+  const { discountType, discountValue, status } = req.body
   const userId = req.user.id
 
   try {
-    await CustomerGroupDiscountService.updateDiscount(id, { discountType, discountValue }, userId)
+    await CustomerGroupDiscountService.updateDiscount(
+      id,
+      { discountType, discountValue, status },
+      userId
+    )
     return http.json(res, 'Thành công', STATUS_CODE.OK)
   } catch (error) {
     next(error)
@@ -64,5 +71,5 @@ module.exports = {
   getDiscountById,
   createDiscount,
   updateDiscount,
-  deleteDiscount
+  deleteDiscount,
 }

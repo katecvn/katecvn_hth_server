@@ -12,10 +12,10 @@ const getCustomerGroups = async (req, res, next) => {
   }
 }
 
-const getCustomerGroupsWithoutDiscount = async (req, res, next) => {
+const getCustomerGroupsWithoutDiscounts = async (req, res, next) => {
   const { page, limit, keyword } = req.query
   try {
-    const groups = await CustomerGroupService.getCustomerGroupsWithoutDiscount({ page, limit, keyword })
+    const groups = await CustomerGroupService.getCustomerGroupsWithoutDiscounts({ page, limit, keyword })
     return http.json(res, 'Thành công', STATUS_CODE.OK, groups)
   } catch (error) {
     next(error)
@@ -65,7 +65,7 @@ const deleteCustomerGroup = async (req, res, next) => {
 }
 
 module.exports = {
-  getCustomerGroupsWithoutDiscount,
+  getCustomerGroupsWithoutDiscounts,
   getCustomerGroups,
   getCustomerGroupById,
   createCustomerGroup,

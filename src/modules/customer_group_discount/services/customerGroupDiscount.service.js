@@ -43,7 +43,7 @@ const getDiscountById = async (id) => {
  * Tạo giảm giá mới cho nhóm
  */
 const createDiscount = async (data, userId) => {
-  const { customerGroupId, discountType, discountValue } = data
+  const { customerGroupId, discountType, discountValue, status } = data
   const transaction = await db.sequelize.transaction()
 
   try {
@@ -51,7 +51,7 @@ const createDiscount = async (data, userId) => {
       where: { customerGroupId, status: 'active' },
       transaction,
     })
-    if (existing) {
+    if (existing && (status === 'active' || !status)) {
       throw new ServiceException(
         { message: message.isExisted },
         STATUS_CODE.UNPROCESSABLE_ENTITY
@@ -63,23 +63,25 @@ const createDiscount = async (data, userId) => {
         customerGroupId,
         discountType: String(discountType),
         discountValue: Number(discountValue),
-        status: 'active',
+        status: status || 'active',
       },
       { transaction }
     )
 
-    await db.CustomerGroupDiscountHistory.create(
-      {
-        customerGroupId,
-        oldType: null,
-        oldValue: null,
-        newType: String(discountType),
-        newValue: Number(discountValue),
-        updatedBy: userId,
-        updatedAt: new Date(),
-      },
-      { transaction }
-    )
+    if (!status || status === 'active') {
+      await db.CustomerGroupDiscountHistory.create(
+        {
+          customerGroupId,
+          oldType: null,
+          oldValue: null,
+          newType: String(discountType),
+          newValue: Number(discountValue),
+          updatedBy: userId,
+          updatedAt: new Date(),
+        },
+        { transaction }
+      )
+    }
 
     await transaction.commit()
     return discount
@@ -88,7 +90,6 @@ const createDiscount = async (data, userId) => {
     throw error
   }
 }
-
 
 /**
  * Cập nhật giảm giá hiện hành
@@ -106,27 +107,48 @@ const updateDiscount = async (id, data, userId) => {
   try {
     const oldType = discount.discountType
     const oldValue = discount.discountValue
+    const oldStatus = discount.status
 
     await discount.update(
       {
         discountType: String(data.discountType),
         discountValue: Number(data.discountValue),
+        status: data.status || discount.status,
       },
       { transaction }
     )
 
-    await db.CustomerGroupDiscountHistory.create(
-      {
-        customerGroupId: discount.customerGroupId,
-        oldType,
-        oldValue,
-        newType: String(data.discountType),
-        newValue: Number(data.discountValue),
-        updatedBy: userId,
-        updatedAt: new Date(),
-      },
-      { transaction }
-    )
+    // Nếu đổi giá trị giảm giá
+    if (oldType !== discount.discountType || oldValue !== discount.discountValue) {
+      await db.CustomerGroupDiscountHistory.create(
+        {
+          customerGroupId: discount.customerGroupId,
+          oldType,
+          oldValue,
+          newType: String(discount.discountType),
+          newValue: Number(discount.discountValue),
+          updatedBy: userId,
+          updatedAt: new Date(),
+        },
+        { transaction }
+      )
+    }
+
+    // Nếu đổi trạng thái inactive -> active
+    if (oldStatus !== discount.status) {
+      await db.CustomerGroupDiscountHistory.create(
+        {
+          customerGroupId: discount.customerGroupId,
+          oldType: null,
+          oldValue: null,
+          newType: null,
+          newValue: null,
+          updatedBy: userId,
+          updatedAt: new Date(),
+        },
+        { transaction }
+      )
+    }
 
     await transaction.commit()
     return discount
@@ -135,8 +157,6 @@ const updateDiscount = async (id, data, userId) => {
     throw error
   }
 }
-
-
 
 /**
  * Xóa (ngưng) giảm giá
@@ -169,7 +189,6 @@ const deleteDiscount = async (id, userId) => {
     throw new Error(error.message)
   }
 }
-
 
 module.exports = {
   getDiscounts,

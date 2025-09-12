@@ -28,40 +28,39 @@ const getCustomerGroups = async (data) => {
   }
 }
 
-const getCustomerGroupsWithoutDiscount = async (data) => {
-  const { page = 1, limit = 20, keyword } = data
+const getCustomerGroupsWithoutDiscounts = async ({ page = 1, limit = 20, keyword }) => {
   const offset = (page - 1) * limit
   const conditions = {}
 
   if (keyword) {
     conditions[db.Sequelize.Op.or] = [
       { name: { [db.Sequelize.Op.like]: `%${keyword}%` } },
-      { description: { [db.Sequelize.Op.like]: `%${keyword}%` } },
+      { description: { [db.Sequelize.Op.like]: `%${keyword}%` } }
     ]
   }
 
-  const { count, rows: groups } = await db.CustomerGroup.findAndCountAll({
-    offset,
-    limit,
+  const { count, rows } = await db.CustomerGroup.findAndCountAll({
     where: conditions,
-    distinct: true,
-    order: [['createdAt', 'DESC']],
     include: [
       {
         model: db.CustomerGroupDiscount,
         as: 'discounts',
-        required: false,
-      },
+        required: false
+      }
     ],
-    having: db.Sequelize.literal('COUNT(`discounts`.`id`) = 0'),
-    group: ['CustomerGroup.id'],
+    offset,
+    limit,
+    distinct: true,
+    order: [['createdAt', 'DESC']]
   })
 
+  const groups = rows.filter(group => !group.discounts || group.discounts.length === 0)
+
   return {
-    totalItems: count.length ? count.length : 0,
-    totalPages: Math.ceil((count.length ? count.length : 0) / limit),
+    totalItems: groups.length,
+    totalPages: Math.ceil(groups.length / limit),
     currentPage: page,
-    groups,
+    groups
   }
 }
 
@@ -124,7 +123,7 @@ const deleteCustomerGroup = async (id) => {
 }
 
 module.exports = {
-  getCustomerGroupsWithoutDiscount,
+  getCustomerGroupsWithoutDiscounts,
   getCustomerGroups,
   getCustomerGroupById,
   createCustomerGroup,

@@ -18,7 +18,7 @@ router.get(
   '/customer-group/shows-without-discount',
   authenticate,
   authorize([PERMISSIONS.CUSTOMER_GROUP_VIEW]),
-  CustomerGroupController.getCustomerGroupsWithoutDiscount
+  CustomerGroupController.getCustomerGroupsWithoutDiscounts
 )
 
 router.get(
