@@ -68,6 +68,7 @@ const createDiscount = async (data, userId) => {
       { transaction }
     )
 
+    // chỉ log nếu tạo mới với trạng thái active
     if (!status || status === 'active') {
       await db.CustomerGroupDiscountHistory.create(
         {
@@ -118,31 +119,50 @@ const updateDiscount = async (id, data, userId) => {
       { transaction }
     )
 
-    // Nếu đổi giá trị giảm giá
-    if (oldType !== discount.discountType || oldValue !== discount.discountValue) {
-      await db.CustomerGroupDiscountHistory.create(
-        {
-          customerGroupId: discount.customerGroupId,
+    const newType = discount.discountType
+    const newValue = discount.discountValue
+    const newStatus = discount.status
+
+    let shouldLog = false
+    let logData = {}
+
+    if (oldStatus !== newStatus) {
+      shouldLog = true
+      if (oldStatus === 'active' && newStatus === 'inactive') {
+        logData = {
           oldType,
           oldValue,
-          newType: String(discount.discountType),
-          newValue: Number(discount.discountValue),
-          updatedBy: userId,
-          updatedAt: new Date(),
-        },
-        { transaction }
-      )
+          newType: null,
+          newValue: null,
+        }
+      } else if (oldStatus === 'inactive' && newStatus === 'active') {
+        logData = {
+          oldType: null,
+          oldValue: null,
+          newType,
+          newValue,
+        }
+      }
+    } else if (newStatus === 'active') {
+      const typeChanged = oldType !== newType
+      const valueChanged = Number(oldValue) !== Number(newValue)
+
+      if (typeChanged || valueChanged) {
+        shouldLog = true
+        logData = {
+          oldType,
+          oldValue,
+          newType,
+          newValue,
+        }
+      }
     }
 
-    // Nếu đổi trạng thái inactive -> active
-    if (oldStatus !== discount.status) {
+    if (shouldLog) {
       await db.CustomerGroupDiscountHistory.create(
         {
           customerGroupId: discount.customerGroupId,
-          oldType: null,
-          oldValue: null,
-          newType: null,
-          newValue: null,
+          ...logData,
           updatedBy: userId,
           updatedAt: new Date(),
         },
@@ -159,7 +179,7 @@ const updateDiscount = async (id, data, userId) => {
 }
 
 /**
- * Xóa (ngưng) giảm giá
+ * Xóa giảm giá
  */
 const deleteDiscount = async (id, userId) => {
   const discount = await db.CustomerGroupDiscount.findByPk(id)

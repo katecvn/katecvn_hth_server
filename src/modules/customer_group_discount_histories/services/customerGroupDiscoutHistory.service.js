@@ -19,9 +19,9 @@ const getHistories = async ({ page = 1, limit = 20, customerGroupId }) => {
         where,
         include: [
           { model: db.CustomerGroup, as: 'customerGroup' },
-          { model: db.User, as: 'changedUser' },
+          { model: db.User, as: 'updatedUser' },
         ],
-        order: [['changedAt', 'DESC']],
+        order: [['createdAt', 'DESC']],
         offset,
         limit,
         distinct: true,
@@ -46,7 +46,7 @@ const getHistoryById = async (id) => {
     const history = await db.CustomerGroupDiscountHistory.findByPk(id, {
       include: [
         { model: db.CustomerGroup, as: 'customerGroup' },
-        { model: db.User, as: 'changedUser' },
+        { model: db.User, as: 'updatedUser' }, 
       ],
     })
 
@@ -59,7 +59,10 @@ const getHistoryById = async (id) => {
 
     return history
   } catch (error) {
-    throw new ServiceException(error.message, error.status || STATUS_CODE.INTERNAL_SERVER_ERROR)
+    throw new ServiceException(
+      error.message,
+      error.status || STATUS_CODE.INTERNAL_SERVER_ERROR
+    )
   }
 }
 
