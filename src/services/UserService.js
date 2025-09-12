@@ -148,17 +148,32 @@ const shows = async ({ page = 1, limit = 9999, type }) => {
     const { count, rows: users } = await db.User.findAndCountAll({
       where: conditions,
       include: [
-        { model: db.Role, as: 'roles', attributes: ['id', 'name', 'description'] },
+        {
+          model: db.Role,
+          as: 'roles',
+          attributes: ['id', 'name', 'description'],
+          through: { attributes: [] }
+        },
         {
           model: db.UserAddress,
           as: 'userAddresses'
+        },
+        {
+          model: db.CustomerGroup,
+          as: 'customerGroup',
+          attributes: ['id', 'name', 'description']
         }
       ],
-      limit: limit,
-      offset: offset
+      limit,
+      offset
     })
 
-    return { totalItems: count, users: users, totalPages: Math.ceil(count / limit), currentPage: page }
+    return {
+      totalItems: count,
+      users,
+      totalPages: Math.ceil(count / limit),
+      currentPage: page
+    }
   } catch (e) {
     throw new ServiceException(e.message, STATUS_CODE.INTERNAL_SERVER_ERROR)
   }

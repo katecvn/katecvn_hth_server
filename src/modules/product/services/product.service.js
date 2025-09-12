@@ -6,6 +6,7 @@ const db = require('../../../models')
 const { generateCloudSignature } = require('../../../utils/SignBCCU')
 const jwt = require('jsonwebtoken')
 const createBCCUApi = require('../../../utils/AxiosBCCU')
+const { get } = require('../routes/product.routes')
 
 const createProduct = async (data) => {
   const {
@@ -988,6 +989,88 @@ const getPublicProducts = async (query) => {
   return await getProducts({ ...query, isPublic: true })
 }
 
+const getProductsByCustomer = async (customerId) => {
+  try {
+    const customer = await db.User.findByPk(customerId, {
+      include: {
+        model: db.CustomerGroup,
+        as: 'customerGroup',
+        include: {
+          model: db.CustomerGroupDiscount,
+          as: 'discounts'
+        }
+      }
+    })
+
+    if (!customer) {
+      throw new ServiceException('Khách hàng không tồn tại', STATUS_CODE.NOT_FOUND)
+    }
+
+    const products = await db.Product.findAll()
+    const discounts = customer.customerGroup?.discounts || []
+
+    const mapped = products.map((prod) => {
+      const discount = discounts.find((d) => d.productId === prod.id)
+      let finalPrice = prod.salePrice
+
+      if (discount) {
+        if (discount.type === 'percentage') {
+          finalPrice = prod.originalPrice * (1 - discount.value / 100)
+        } else if (discount.type === 'fixed') {
+          finalPrice = prod.originalPrice - discount.value
+        }
+      }
+
+      return {
+        ...prod.toJSON(),
+        currentPrice: finalPrice
+      }
+    })
+
+    return mapped
+  } catch (e) {
+    throw new ServiceException(e.message, STATUS_CODE.INTERNAL_SERVER_ERROR)
+  }
+}
+
+const getProductPriceHistoryByCustomer = async (customerId, productId) => {
+  try {
+    const product = await db.Product.findByPk(productId)
+    if (!product) {
+      throw new ServiceException('Sản phẩm không tồn tại', STATUS_CODE.NOT_FOUND)
+    }
+
+    const histories = await db.CustomerGroupDiscountHistory.findAll({
+      where: { productId, customerId },
+      include: [{ model: db.User, as: 'updatedUser', attributes: ['id', 'full_name', 'email'] }],
+      order: [['createdAt', 'DESC']]
+    })
+
+    return histories.map((h) => {
+      let reason = 'Thay đổi giá gốc'
+      if (h.type === 'percentage') {
+        reason = `Giảm ${h.value}%`
+      } else if (h.type === 'fixed') {
+        reason = `Giảm ${h.value} đ`
+      }
+
+      return {
+        id: h.id,
+        oldValue: h.oldValue,
+        newValue: h.newValue,
+        type: h.type,
+        value: h.value,
+        reason,
+        createdAt: h.createdAt,
+        updatedUser: h.updatedUser
+      }
+    })
+  } catch (e) {
+    throw new ServiceException(e.message, STATUS_CODE.INTERNAL_SERVER_ERROR)
+  }
+}
+
+
 module.exports = {
   createProduct,
   getProducts,
@@ -998,5 +1081,7 @@ module.exports = {
   updateProduct,
   deleteProduct,
   sendProductToBCCU,
-  getPublicProducts
+  getPublicProducts,
+  getProductsByCustomer,
+  getProductPriceHistoryByCustomer
 }

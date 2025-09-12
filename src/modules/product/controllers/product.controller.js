@@ -5,12 +5,8 @@ const ProductService = require('../services/product.service')
 const createProduct = async (req, res, next) => {
   const { id } = req.user
   const data = req.body
-
   try {
-    const result = await ProductService.createProduct({
-      ...data,
-      creator: id
-    })
+    const result = await ProductService.createProduct({ ...data, creator: id })
     return http.json(res, 'Thành công', STATUS_CODE.OK, result)
   } catch (error) {
     next(error)
@@ -18,10 +14,8 @@ const createProduct = async (req, res, next) => {
 }
 
 const getProducts = async (req, res, next) => {
-  const query = req.query
-
   try {
-    const result = await ProductService.getProducts(query)
+    const result = await ProductService.getProducts(req.query)
     return http.json(res, 'Thành công', STATUS_CODE.OK, result)
   } catch (error) {
     next(error)
@@ -29,10 +23,8 @@ const getProducts = async (req, res, next) => {
 }
 
 const getPublicProducts = async (req, res, next) => {
-  const query = req.query
-
   try {
-    const result = await ProductService.getPublicProducts(query)
+    const result = await ProductService.getPublicProducts(req.query)
     return http.json(res, 'Thành công', STATUS_CODE.OK, result)
   } catch (error) {
     next(error)
@@ -40,10 +32,8 @@ const getPublicProducts = async (req, res, next) => {
 }
 
 const getVariants = async (req, res, next) => {
-  const query = req.query
-
   try {
-    const result = await ProductService.getVariants(query)
+    const result = await ProductService.getVariants(req.query)
     return http.json(res, 'Thành công', STATUS_CODE.OK, result)
   } catch (error) {
     next(error)
@@ -51,10 +41,8 @@ const getVariants = async (req, res, next) => {
 }
 
 const getProductById = async (req, res, next) => {
-  const { id } = req.params
-
   try {
-    const result = await ProductService.getProductById(id)
+    const result = await ProductService.getProductById(req.params.id)
     return http.json(res, 'Thành công', STATUS_CODE.OK, result)
   } catch (error) {
     next(error)
@@ -62,10 +50,8 @@ const getProductById = async (req, res, next) => {
 }
 
 const getProductBySlug = async (req, res, next) => {
-  const { slug } = req.params
-
   try {
-    const result = await ProductService.getProductBySlug(slug)
+    const result = await ProductService.getProductBySlug(req.params.slug)
     return http.json(res, 'Thành công', STATUS_CODE.OK, result)
   } catch (error) {
     next(error)
@@ -73,11 +59,8 @@ const getProductBySlug = async (req, res, next) => {
 }
 
 const updateProductStatus = async (req, res, next) => {
-  const { id } = req.params
-  const data = req.body
-
   try {
-    const result = await ProductService.updateProductStatus(id, data)
+    const result = await ProductService.updateProductStatus(req.params.id, req.body)
     return http.json(res, 'Thành công', STATUS_CODE.OK, result)
   } catch (error) {
     next(error)
@@ -86,11 +69,9 @@ const updateProductStatus = async (req, res, next) => {
 
 const updateProduct = async (req, res, next) => {
   const { id } = req.params
-  const data = req.body
   const { id: updater } = req.user
-
   try {
-    const result = await ProductService.updateProduct(id, { ...data, updater })
+    const result = await ProductService.updateProduct(id, { ...req.body, updater })
     return http.json(res, 'Thành công', STATUS_CODE.OK, result)
   } catch (error) {
     next(error)
@@ -98,10 +79,8 @@ const updateProduct = async (req, res, next) => {
 }
 
 const deleteProduct = async (req, res, next) => {
-  const { id } = req.params
-
   try {
-    const result = await ProductService.deleteProduct(id)
+    const result = await ProductService.deleteProduct(req.params.id)
     return http.json(res, 'Thành công', STATUS_CODE.OK, result)
   } catch (error) {
     next(error)
@@ -109,10 +88,8 @@ const deleteProduct = async (req, res, next) => {
 }
 
 const sendProductToBCCU = async (req, res, next) => {
-  const { id } = req.params
-
   try {
-    const result = await ProductService.sendProductToBCCU({ id, isVariant: false })
+    const result = await ProductService.sendProductToBCCU({ id: req.params.id, isVariant: false })
     return http.json(res, 'Thành công', STATUS_CODE.OK, result)
   } catch (error) {
     next(error)
@@ -120,10 +97,27 @@ const sendProductToBCCU = async (req, res, next) => {
 }
 
 const sendProductVariantToBCCU = async (req, res, next) => {
-  const { id } = req.params
-
   try {
-    const result = await ProductService.sendProductToBCCU({ id, isVariant: true })
+    const result = await ProductService.sendProductToBCCU({ id: req.params.id, isVariant: true })
+    return http.json(res, 'Thành công', STATUS_CODE.OK, result)
+  } catch (error) {
+    next(error)
+  }
+}
+
+const getProductsByCustomer = async (req, res, next) => {
+  try {
+    const result = await ProductService.getProductsByCustomer(req.params.customerId)
+    return http.json(res, 'Thành công', STATUS_CODE.OK, result)
+  } catch (error) {
+    next(error)
+  }
+}
+
+const getProductPriceHistoryByCustomer = async (req, res, next) => {
+  try {
+    const { customerId, productId } = req.params
+    const result = await ProductService.getProductPriceHistoryByCustomer(customerId, productId)
     return http.json(res, 'Thành công', STATUS_CODE.OK, result)
   } catch (error) {
     next(error)
@@ -141,5 +135,7 @@ module.exports = {
   updateProduct,
   deleteProduct,
   sendProductToBCCU,
-  sendProductVariantToBCCU
+  sendProductVariantToBCCU,
+  getProductsByCustomer,
+  getProductPriceHistoryByCustomer
 }
