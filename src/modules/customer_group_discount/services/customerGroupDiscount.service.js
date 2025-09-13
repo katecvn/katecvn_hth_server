@@ -3,9 +3,6 @@ const { message } = require('../../../constants/message')
 const ServiceException = require('../../../exceptions/ServiceException')
 const db = require('../../../models')
 
-/**
- * Lấy danh sách giảm giá nhóm
- */
 const getDiscounts = async ({ page = 1, limit = 20, keyword }) => {
   const offset = (page - 1) * limit
   const where = {}
@@ -16,7 +13,10 @@ const getDiscounts = async ({ page = 1, limit = 20, keyword }) => {
 
   const { count, rows } = await db.CustomerGroupDiscount.findAndCountAll({
     where,
-    include: [{ model: db.CustomerGroup, as: 'customerGroup' }],
+    include: [
+      { model: db.CustomerGroup, as: 'customerGroup' },
+      { model: db.Product, as: 'product' }
+    ],
     offset,
     limit,
     distinct: true,
@@ -30,25 +30,22 @@ const getDiscounts = async ({ page = 1, limit = 20, keyword }) => {
   }
 }
 
-/**
- * Lấy chi tiết giảm giá theo ID
- */
 const getDiscountById = async (id) => {
   return await db.CustomerGroupDiscount.findByPk(id, {
-    include: [{ model: db.CustomerGroup, as: 'customerGroup' }],
+    include: [
+      { model: db.CustomerGroup, as: 'customerGroup' },
+      { model: db.Product, as: 'product' }
+    ],
   })
 }
 
-/**
- * Tạo giảm giá mới cho nhóm
- */
 const createDiscount = async (data, userId) => {
-  const { customerGroupId, discountType, discountValue, status } = data
+  const { customerGroupId, productId, discountType, discountValue, status } = data
   const transaction = await db.sequelize.transaction()
 
   try {
     const existing = await db.CustomerGroupDiscount.findOne({
-      where: { customerGroupId, status: 'active' },
+      where: { customerGroupId, productId, status: 'active' },
       transaction,
     })
     if (existing && (status === 'active' || !status)) {
@@ -61,6 +58,7 @@ const createDiscount = async (data, userId) => {
     const discount = await db.CustomerGroupDiscount.create(
       {
         customerGroupId,
+        productId: productId || null,
         discountType: String(discountType),
         discountValue: Number(discountValue),
         status: status || 'active',
@@ -68,11 +66,11 @@ const createDiscount = async (data, userId) => {
       { transaction }
     )
 
-    // chỉ log nếu tạo mới với trạng thái active
     if (!status || status === 'active') {
       await db.CustomerGroupDiscountHistory.create(
         {
           customerGroupId,
+          productId: productId || null,
           oldType: null,
           oldValue: null,
           newType: String(discountType),
@@ -92,9 +90,6 @@ const createDiscount = async (data, userId) => {
   }
 }
 
-/**
- * Cập nhật giảm giá hiện hành
- */
 const updateDiscount = async (id, data, userId) => {
   const discount = await db.CustomerGroupDiscount.findByPk(id)
   if (!discount) {
@@ -112,6 +107,7 @@ const updateDiscount = async (id, data, userId) => {
 
     await discount.update(
       {
+        productId: data.productId !== undefined ? data.productId : discount.productId,
         discountType: String(data.discountType),
         discountValue: Number(data.discountValue),
         status: data.status || discount.status,
@@ -146,7 +142,6 @@ const updateDiscount = async (id, data, userId) => {
     } else if (newStatus === 'active') {
       const typeChanged = oldType !== newType
       const valueChanged = Number(oldValue) !== Number(newValue)
-
       if (typeChanged || valueChanged) {
         shouldLog = true
         logData = {
@@ -162,6 +157,7 @@ const updateDiscount = async (id, data, userId) => {
       await db.CustomerGroupDiscountHistory.create(
         {
           customerGroupId: discount.customerGroupId,
+          productId: discount.productId,
           ...logData,
           updatedBy: userId,
           updatedAt: new Date(),
@@ -178,9 +174,6 @@ const updateDiscount = async (id, data, userId) => {
   }
 }
 
-/**
- * Xóa giảm giá
- */
 const deleteDiscount = async (id, userId) => {
   const discount = await db.CustomerGroupDiscount.findByPk(id)
   if (!discount) throw new Error('Không tìm thấy giảm giá nhóm khách hàng')
@@ -190,6 +183,7 @@ const deleteDiscount = async (id, userId) => {
     await db.CustomerGroupDiscountHistory.create(
       {
         customerGroupId: discount.customerGroupId,
+        productId: discount.productId,
         oldType: discount.discountType,
         oldValue: discount.discountValue,
         newType: null,

@@ -3,12 +3,25 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.createTable('CustomerGroupDiscounts', {
-      id: { allowNull: false, autoIncrement: true, primaryKey: true, type: Sequelize.BIGINT },
+      id: { 
+        allowNull: false, 
+        autoIncrement: true, 
+        primaryKey: true, 
+        type: Sequelize.BIGINT 
+      },
 
       customerGroupId: {
         type: Sequelize.BIGINT,
         allowNull: false,
         references: { model: 'CustomerGroups', key: 'id' },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE'
+      },
+
+      productId: {
+        type: Sequelize.INTEGER,
+        allowNull: true, 
+        references: { model: 'Products', key: 'id' },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
@@ -29,8 +42,14 @@ module.exports = {
         defaultValue: 'active'
       },
 
-      createdAt: { type: Sequelize.DATE, defaultValue: Sequelize.NOW },
-      updatedAt: { type: Sequelize.DATE, defaultValue: Sequelize.NOW }
+      createdAt: { 
+        type: Sequelize.DATE, 
+        defaultValue: Sequelize.NOW 
+      },
+      updatedAt: { 
+        type: Sequelize.DATE, 
+        defaultValue: Sequelize.NOW 
+      }
     })
   },
 

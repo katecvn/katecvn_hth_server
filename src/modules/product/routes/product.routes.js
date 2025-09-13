@@ -93,8 +93,4 @@ router.put('/receipt/update/:id', authenticate, authorize([]), ReceiptController
 router.delete('/receipt/destroy/:id', authenticate, authorize([]), ReceiptController.deleteReceipt)
 router.put('/receipt/update-status/:id', authenticate, authorize([]), ReceiptValidate.updateStatus, validate, ReceiptController.updateReceiptStatus)
 
-router.get('/product/by-customer/:customerId', authenticate, authorize([]), ProductController.getProductsByCustomer)
-router.get('/product/history/:customerId/:productId', authenticate, authorize([]), ProductController.getProductPriceHistoryByCustomer)
-
-
 module.exports = router

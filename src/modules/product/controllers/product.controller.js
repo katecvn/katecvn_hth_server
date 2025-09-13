@@ -105,25 +105,6 @@ const sendProductVariantToBCCU = async (req, res, next) => {
   }
 }
 
-const getProductsByCustomer = async (req, res, next) => {
-  try {
-    const result = await ProductService.getProductsByCustomer(req.params.customerId)
-    return http.json(res, 'Thành công', STATUS_CODE.OK, result)
-  } catch (error) {
-    next(error)
-  }
-}
-
-const getProductPriceHistoryByCustomer = async (req, res, next) => {
-  try {
-    const { customerId, productId } = req.params
-    const result = await ProductService.getProductPriceHistoryByCustomer(customerId, productId)
-    return http.json(res, 'Thành công', STATUS_CODE.OK, result)
-  } catch (error) {
-    next(error)
-  }
-}
-
 module.exports = {
   createProduct,
   getProducts,
@@ -136,6 +117,4 @@ module.exports = {
   deleteProduct,
   sendProductToBCCU,
   sendProductVariantToBCCU,
-  getProductsByCustomer,
-  getProductPriceHistoryByCustomer
 }

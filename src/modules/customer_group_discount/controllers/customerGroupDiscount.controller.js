@@ -23,12 +23,12 @@ const getDiscountById = async (req, res, next) => {
 }
 
 const createDiscount = async (req, res, next) => {
-  const { customerGroupId, discountType, discountValue, status } = req.body
+  const { customerGroupId, productId, discountType, discountValue, status } = req.body
   const userId = req.user.id
 
   try {
     await CustomerGroupDiscountService.createDiscount(
-      { customerGroupId, discountType, discountValue, status },
+      { customerGroupId, productId, discountType, discountValue, status },
       userId
     )
     return http.json(res, 'Thành công', STATUS_CODE.OK)
@@ -39,13 +39,13 @@ const createDiscount = async (req, res, next) => {
 
 const updateDiscount = async (req, res, next) => {
   const { id } = req.params
-  const { discountType, discountValue, status } = req.body
+  const { productId, discountType, discountValue, status } = req.body
   const userId = req.user.id
 
   try {
     await CustomerGroupDiscountService.updateDiscount(
       id,
-      { discountType, discountValue, status },
+      { productId, discountType, discountValue, status },
       userId
     )
     return http.json(res, 'Thành công', STATUS_CODE.OK)

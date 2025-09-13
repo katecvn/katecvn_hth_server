@@ -9,18 +9,41 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'customerGroupId',
         as: 'customerGroup'
       })
+
+      CustomerGroupDiscount.belongsTo(models.Product, {
+        foreignKey: 'productId',
+        as: 'product'
+      })
     }
   }
 
   CustomerGroupDiscount.init(
     {
-      id: { type: DataTypes.BIGINT, primaryKey: true, autoIncrement: true },
+      id: { 
+        type: DataTypes.BIGINT, 
+        primaryKey: true, 
+        autoIncrement: true 
+      },
 
-      customerGroupId: { type: DataTypes.BIGINT, allowNull: false },
+      customerGroupId: { 
+        type: DataTypes.BIGINT, 
+        allowNull: false 
+      },
 
-      discountType: { type: DataTypes.ENUM('percentage', 'fixed'), allowNull: false },
+      productId: { 
+        type: DataTypes.BIGINT, 
+        allowNull: true
+      },
 
-      discountValue: { type: DataTypes.DECIMAL(15, 2), allowNull: false },
+      discountType: { 
+        type: DataTypes.ENUM('percentage', 'fixed'), 
+        allowNull: false 
+      },
+
+      discountValue: { 
+        type: DataTypes.DECIMAL(15, 2), 
+        allowNull: false 
+      },
 
       status: {
         type: DataTypes.ENUM('active', 'inactive'),
