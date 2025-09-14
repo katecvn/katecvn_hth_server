@@ -9,6 +9,10 @@ module.exports = (sequelize, DataTypes) => {
       Product.hasMany(models.WishList, { foreignKey: 'productId', as: 'wishLists' })
       Product.hasMany(models.ProductVariant, { foreignKey: 'productId', as: 'variants' })
       Product.hasMany(models.ProductSpecification, { foreignKey: 'productId', as: 'specificationValues' })
+      Product.hasMany(models.CustomerGroupDiscount, {
+        foreignKey: 'productId',
+        as: 'customerDiscounts',
+      })
     }
   }
 

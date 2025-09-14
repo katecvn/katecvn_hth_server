@@ -1,53 +1,60 @@
 const express = require('express')
-const CustomerGroupDiscountController = require('../controllers/customerGroupDiscount.controller')
-const CustomerGroupDiscountValidate = require('../validations/customerGroupDiscount.validation')
+const CustomerProductDiscountController = require('../controllers/customerGroupDiscount.controller')
+const CustomerProductDiscountValidate = require('../validations/customerGroupDiscount.validation')
 const { authenticate, authorize } = require('../../../middlewares/JWTAction')
 const { validate } = require('../../../middlewares/Validate')
 const PERMISSIONS = require('../../../constants/permission')
 
 const router = express.Router()
 
+// Lấy sản phẩm kèm giảm giá theo group
 router.get(
-  '/customer-group-discount/shows',
+  '/customer-product-discount/products',
   authenticate,
   authorize([PERMISSIONS.CUSTOMER_GROUP_DISCOUNT_VIEW]),
-  CustomerGroupDiscountController.getDiscounts
-)
-
-router.get(
-  '/customer-group-discount/show/:id',
-  authenticate,
-  authorize([PERMISSIONS.CUSTOMER_GROUP_DISCOUNT_VIEW]),
-  CustomerGroupDiscountValidate.getById,
+  CustomerProductDiscountValidate.getProductsByCustomerGroup,
   validate,
-  CustomerGroupDiscountController.getDiscountById
+  CustomerProductDiscountController.getProductsByCustomerGroup
 )
 
+// Tạo giảm giá cho 1 sản phẩm
 router.post(
-  '/customer-group-discount/create',
+  '/customer-product-discount/create',
   authenticate,
   authorize([PERMISSIONS.CUSTOMER_GROUP_DISCOUNT_CREATE]),
-  CustomerGroupDiscountValidate.create,
+  CustomerProductDiscountValidate.create,
   validate,
-  CustomerGroupDiscountController.createDiscount
+  CustomerProductDiscountController.createDiscount
 )
 
+// Update giảm giá cho 1 sản phẩm
 router.put(
-  '/customer-group-discount/update/:id',
+  '/customer-product-discount/update/:id',
   authenticate,
   authorize([PERMISSIONS.CUSTOMER_GROUP_DISCOUNT_UPDATE]),
-  CustomerGroupDiscountValidate.update,
+  CustomerProductDiscountValidate.update,
   validate,
-  CustomerGroupDiscountController.updateDiscount
+  CustomerProductDiscountController.updateDiscount
 )
 
+// Xóa giảm giá
 router.delete(
-  '/customer-group-discount/destroy/:id',
+  '/customer-product-discount/destroy/:id',
   authenticate,
   authorize([PERMISSIONS.CUSTOMER_GROUP_DISCOUNT_DELETE]),
-  CustomerGroupDiscountValidate.deleteById,
+  CustomerProductDiscountValidate.deleteById,
   validate,
-  CustomerGroupDiscountController.deleteDiscount
+  CustomerProductDiscountController.deleteDiscount
+)
+
+// Cập nhật hàng loạt discount cho group
+router.post(
+  '/customer-product-discount/bulk-update',
+  authenticate,
+  authorize([PERMISSIONS.CUSTOMER_GROUP_DISCOUNT_UPDATE]),
+  CustomerProductDiscountValidate.bulkUpdate,
+  validate,
+  CustomerProductDiscountController.bulkUpdateDiscount
 )
 
 module.exports = router

@@ -1,64 +1,58 @@
 'use strict'
 
-const { Model } = require('sequelize')
+const { Model, DataTypes } = require('sequelize')
 
-module.exports = (sequelize, DataTypes) => {
+module.exports = (sequelize) => {
   class CustomerGroupDiscount extends Model {
     static associate(models) {
       CustomerGroupDiscount.belongsTo(models.CustomerGroup, {
         foreignKey: 'customerGroupId',
-        as: 'customerGroup'
+        as: 'customerGroup',
       })
 
       CustomerGroupDiscount.belongsTo(models.Product, {
         foreignKey: 'productId',
-        as: 'product'
+        as: 'discountProduct',
       })
     }
   }
 
   CustomerGroupDiscount.init(
     {
-      id: { 
-        type: DataTypes.BIGINT, 
-        primaryKey: true, 
-        autoIncrement: true 
+      id: {
+        type: DataTypes.BIGINT,
+        primaryKey: true,
+        autoIncrement: true,
       },
-
-      customerGroupId: { 
-        type: DataTypes.BIGINT, 
-        allowNull: false 
+      customerGroupId: {
+        type: DataTypes.BIGINT,
+        allowNull: false,
       },
-
-      productId: { 
-        type: DataTypes.BIGINT, 
-        allowNull: true
+      productId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
       },
-
-      discountType: { 
-        type: DataTypes.ENUM('percentage', 'fixed'), 
-        allowNull: false 
+      discountType: {
+        type: DataTypes.ENUM('percentage', 'fixed'),
+        allowNull: false,
       },
-
-      discountValue: { 
-        type: DataTypes.DECIMAL(15, 2), 
-        allowNull: false 
+      discountValue: {
+        type: DataTypes.DECIMAL(15, 2),
+        allowNull: false,
       },
-
       status: {
         type: DataTypes.ENUM('active', 'inactive'),
         allowNull: false,
-        defaultValue: 'active'
+        defaultValue: 'active',
       },
-
-      createdAt: { type: DataTypes.DATE },
-      updatedAt: { type: DataTypes.DATE }
+      createdAt: DataTypes.DATE,
+      updatedAt: DataTypes.DATE,
     },
     {
       sequelize,
       modelName: 'CustomerGroupDiscount',
       tableName: 'CustomerGroupDiscounts',
-      timestamps: true
+      timestamps: true,
     }
   )
 

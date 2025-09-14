@@ -1,11 +1,10 @@
-const { body, param } = require('express-validator')
+const { body, param, query } = require('express-validator')
 const { message } = require('../../../constants/message')
 const db = require('../../../models')
 
-const create = [
-  body('customerGroupId')
+const getProductsByCustomerGroup = [
+  query('customerGroupId')
     .notEmpty().withMessage(message.notEmpty)
-    .bail()
     .isInt().withMessage(message.isInt)
     .bail()
     .custom(async (id) => {
@@ -13,64 +12,60 @@ const create = [
       if (!group) throw new Error('Không tìm thấy nhóm khách hàng.')
       return true
     }),
+]
 
+const create = [
+  body('customerGroupId')
+    .notEmpty().withMessage(message.notEmpty)
+    .isInt().withMessage(message.isInt),
+  body('productId')
+    .notEmpty().withMessage(message.notEmpty)
+    .isInt().withMessage(message.isInt),
   body('discountType')
     .notEmpty().withMessage(message.notEmpty)
-    .bail()
-    .isIn(['percentage', 'fixed'])
-    .withMessage(message.isIn(['percentage', 'fixed'])),
-
+    .isIn(['percentage', 'fixed']).withMessage(message.isIn(['percentage', 'fixed'])),
   body('discountValue')
     .notEmpty().withMessage(message.notEmpty)
-    .bail()
-    .isFloat({ min: 0 }).withMessage(message.isFloat)
+    .isFloat({ min: 0 }).withMessage(message.isFloat),
 ]
 
 const update = [
   param('id')
     .notEmpty().withMessage(message.notEmpty)
-    .bail()
-    .isInt().withMessage(message.isInt)
-    .bail()
-    .custom(async (id) => {
-      const discount = await db.CustomerGroupDiscount.findByPk(id)
-      if (!discount) throw new Error('Không tìm thấy giảm giá nhóm khách hàng.')
-      return true
-    }),
-
+    .isInt().withMessage(message.isInt),
   body('discountType')
     .optional()
-    .isIn(['percentage', 'fixed'])
-    .withMessage(message.isIn(['percentage', 'fixed'])),
-
+    .isIn(['percentage', 'fixed']).withMessage(message.isIn(['percentage', 'fixed'])),
   body('discountValue')
     .optional()
-    .isFloat({ min: 0 }).withMessage(message.isFloat)
+    .isFloat({ min: 0 }).withMessage(message.isFloat),
 ]
 
 const deleteById = [
   param('id')
     .notEmpty().withMessage(message.notEmpty)
-    .bail()
-    .isInt().withMessage(message.isInt)
-    .bail()
-    .custom(async (id) => {
-      const discount = await db.CustomerGroupDiscount.findByPk(id)
-      if (!discount) throw new Error('Không tìm thấy giảm giá nhóm khách hàng.')
-      return true
-    })
+    .isInt().withMessage(message.isInt),
 ]
 
-const getById = [
-  param('id')
+const bulkUpdate = [
+  body('customerGroupId')
     .notEmpty().withMessage(message.notEmpty)
-    .bail()
-    .isInt().withMessage(message.isInt)
+    .isInt().withMessage(message.isInt),
+  body('discountType')
+    .notEmpty().withMessage(message.notEmpty)
+    .isIn(['percentage', 'fixed']).withMessage(message.isIn(['percentage', 'fixed'])),
+  body('discountValue')
+    .notEmpty().withMessage(message.notEmpty)
+    .isFloat({ min: 0 }).withMessage(message.isFloat),
+  body('status')
+    .notEmpty().withMessage(message.notEmpty)
+    .isIn(['active', 'inactive']).withMessage(message.isIn(['active', 'inactive'])),
 ]
 
 module.exports = {
+  getProductsByCustomerGroup,
   create,
   update,
   deleteById,
-  getById
+  bulkUpdate,
 }
