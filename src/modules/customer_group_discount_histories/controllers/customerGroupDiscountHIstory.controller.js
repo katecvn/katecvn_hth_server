@@ -1,6 +1,6 @@
 const { STATUS_CODE } = require('../../../constants')
 const http = require('../../../utils/http')
-const CustomerGroupDiscountHistoryService = require('../services/customerGroupDiscoutHistory.service')
+const CustomerGroupDiscountHistoryService = require('../services/customerGroupDiscountHistory.service')
 
 /**
  * Lấy danh sách lịch sử giảm giá nhóm khách hàng
