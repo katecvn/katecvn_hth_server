@@ -36,9 +36,6 @@ modulePaths.forEach((modulePath) => {
 // Thiết lập quan hệ giữa các models
 Object.values(db).forEach((model) => {
   if (model.associate) {
-    if(model.name == "Product"){
-      console.log('Associating model:', model.associate.toString())
-    }
     model.associate(db)
   }
 })

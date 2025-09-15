@@ -27,6 +27,9 @@ const create = [
   body('discountValue')
     .notEmpty().withMessage(message.notEmpty)
     .isFloat({ min: 0 }).withMessage(message.isFloat),
+  body('status')
+    .optional()
+    .isIn(['active', 'inactive']).withMessage(message.isIn(['active', 'inactive'])),
 ]
 
 const update = [
@@ -39,10 +42,16 @@ const update = [
   body('discountValue')
     .optional()
     .isFloat({ min: 0 }).withMessage(message.isFloat),
+  body('status')
+    .optional()
+    .isIn(['active', 'inactive']).withMessage(message.isIn(['active', 'inactive'])),
 ]
 
-const deleteById = [
-  param('id')
+const deleteDiscount = [
+  body('customerGroupId')
+    .notEmpty().withMessage(message.notEmpty)
+    .isInt().withMessage(message.isInt),
+  body('productId')
     .notEmpty().withMessage(message.notEmpty)
     .isInt().withMessage(message.isInt),
 ]
@@ -66,6 +75,6 @@ module.exports = {
   getProductsByCustomerGroup,
   create,
   update,
-  deleteById,
+  deleteDiscount,
   bulkUpdate,
 }

@@ -38,9 +38,9 @@ const updateDiscount = async (req, res, next) => {
 }
 
 const deleteDiscount = async (req, res, next) => {
-  const { id } = req.params
+  const { customerGroupId, productId } = req.body
   try {
-    await CustomerProductDiscountService.deleteDiscount(id)
+    await CustomerProductDiscountService.deleteDiscount({ customerGroupId, productId })
     return http.json(res, 'Thành công', STATUS_CODE.OK)
   } catch (error) {
     next(error)

@@ -37,12 +37,12 @@ router.put(
   CustomerProductDiscountController.updateDiscount
 )
 
-// Xóa giảm giá
+// Xóa giảm giá (truyền customerGroupId và productId trong body)
 router.delete(
-  '/customer-product-discount/destroy/:id',
+  '/customer-product-discount/destroy',
   authenticate,
   authorize([PERMISSIONS.CUSTOMER_GROUP_DISCOUNT_DELETE]),
-  CustomerProductDiscountValidate.deleteById,
+  CustomerProductDiscountValidate.deleteDiscount,
   validate,
   CustomerProductDiscountController.deleteDiscount
 )
