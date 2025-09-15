@@ -44,7 +44,7 @@ const ProductVariantRoutes = require('../modules/product_variant/routes/product.
 const SitemapRoutes = require('../modules/sitemap/routes/sitemap.routes')
 const CustomerGroupRoutes = require('../modules/customer_group/routes/customerGroup.routes')
 const CustomerGroupDiscountRoutes = require('../modules/customer_group_discount/routes/customerGroupDiscount.routes')
-const CustomerGroupDiscountHistoryRoutes = require('../modules/customer_group_discount_histories/routes/customerGroupDiscountHistory1.routes')
+const CustomerGroupDiscountHistoryRoutes = require('../modules/customer_group_discount_histories/routes/customerGroupDiscountHistory.routes')
 
 const { forgotPasswordValidate } = require('../validates/ForgotPasswordValidate')
 const { resetPasswordValidate } = require('../validates/ResetPasswordValidate')
