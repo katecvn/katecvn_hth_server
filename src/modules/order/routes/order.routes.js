@@ -92,4 +92,14 @@ router.delete(
   ShippingController.deleteShippingById
 )
 
+router.get(
+  '/order-purchase-summary',
+  authenticate,
+  // authorize([PERMISSIONS.ORDER_VIEW]),
+  OrderValidate.rangeDate,
+  validate,
+  OrderController.getPurchaseSummary
+)
+
+
 module.exports = router

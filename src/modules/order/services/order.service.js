@@ -70,7 +70,7 @@ const checkOrderPermission = async (userId, permissionName) => {
   return permissions.includes(permissionName)
 }
 
-const getOrders = async ({ fromDate, toDate, userId, customerId, page = 1, limit = 9999 }) => {
+const getOrders = async ({ fromDate, toDate, userId, customerId, status, shippingStatus, page = 1, limit = 9999 }) => {
   const offset = (page - 1) * limit
   const conditions = {}
 
@@ -86,12 +86,25 @@ const getOrders = async ({ fromDate, toDate, userId, customerId, page = 1, limit
   if (customerId) {
     conditions.customerId = customerId
   }
+  if (status) {
+    conditions.status = status
+  }
+
+  const include = [...orderDetail]
+  if (shippingStatus) {
+    include.push({
+      model: db.Shipping,
+      as: 'shippings',
+      where: { shippingStatus },
+      required: true
+    })
+  }
 
   const { count, rows: orders } = await db.Order.findAndCountAll({
     limit,
     offset,
     where: conditions,
-    include: orderDetail,
+    include,
     attributes: { exclude: ['deletedAt'] },
     order: [['createdAt', 'DESC']],
     distinct: true
@@ -106,13 +119,15 @@ const getOrders = async ({ fromDate, toDate, userId, customerId, page = 1, limit
 }
 
 const getOrdersByDate = async (data) => {
-  const { id: userId, fromDate, toDate, page, limit } = data
+  const { id: userId, fromDate, toDate, page, limit, status, shippingStatus } = data
 
   const isViewOrder = await checkOrderPermission(userId, PERMISSIONS.ORDER_VIEW)
 
   return await getOrders({
     fromDate,
     toDate,
+    status,
+    shippingStatus,
     page,
     limit,
     ...(isViewOrder ? {} : { userId })
@@ -120,9 +135,10 @@ const getOrdersByDate = async (data) => {
 }
 
 const getOrderByCustomer = async (data) => {
-  const { id: customerId, fromDate, toDate, page, limit } = data
-  return await getOrders({ customerId, fromDate, toDate, page, limit })
+  const { id: customerId, fromDate, toDate, page, limit, status, shippingStatus } = data
+  return await getOrders({ customerId, fromDate, toDate, status, shippingStatus, page, limit })
 }
+
 
 const createNewUserAndAddress = async (name, phone, email, address) => {
   const existingUser = await UserService.getUserByEmail({ email })
@@ -582,6 +598,87 @@ const sendOrderEmail = async (order) => {
   }
 }
 
+const getPurchaseSummary = async ({ fromDate, toDate, status, shippingStatus, userId, customerId }) => {
+  try {
+
+    const conditions = {}
+
+    if (fromDate && toDate) {
+      const { startDate, endDate } = convertDateFormat(fromDate, toDate)
+      conditions.createdAt = { [Op.between]: [startDate, endDate] }
+    }
+    if (userId) conditions.userId = userId
+    if (customerId) conditions.customerId = customerId
+    if (status) conditions.status = status
+
+    const include = [
+      {
+        model: db.OrderDetail,
+        as: 'orderItems',
+        include: [
+          {
+            model: db.ProductVariant,
+            as: 'productVariant',
+            include: [
+              { model: db.Product, as: 'product', attributes: ['id', 'name', 'sku', 'slug'] }
+            ]
+          }
+        ]
+      }
+    ]
+
+    if (shippingStatus) {
+      include.push({
+        model: db.Shipping,
+        as: 'shippings',
+        where: { shippingStatus },
+        required: true
+      })
+    }
+
+    const orders = await db.Order.findAll({
+      where: conditions,
+      include,
+      attributes: ['id', 'code', 'createdAt'],
+      order: [['createdAt', 'DESC']]
+    })
+
+    const summaryMap = {}
+    orders.forEach(order => {
+      order.orderItems?.forEach(item => {
+        const key = item.productVariant?.product?.id || item.productVariantId
+        if (!summaryMap[key]) {
+          summaryMap[key] = {
+            productId: item.productVariant?.product?.id,
+            productName: item.productVariant?.product?.name || item.productName,
+            productSku: item.productVariant?.product?.sku || item.productSku,
+            unit: item.productUnit,
+            totalQuantity: 0,
+            totalAmount: 0,
+            orders: []
+          }
+        }
+        summaryMap[key].totalQuantity += Number(item.quantity)
+        summaryMap[key].totalAmount += Number(item.totalPrice)
+        summaryMap[key].orders.push({
+          orderId: order.id,
+          code: order.code,
+          createdAt: order.createdAt,
+          quantity: item.quantity,
+          salePrice: item.salePrice,
+          totalPrice: item.totalPrice
+        })
+      })
+    })
+
+    return Object.values(summaryMap)
+  } catch (error) {
+    throw new ServiceException(error.message, STATUS_CODE.SERVER_ERROR)
+  }
+}
+
+
+
 module.exports = {
   getOrdersByDate,
   getOrderByCustomer,
@@ -591,5 +688,6 @@ module.exports = {
   updateOrderPaymentStatusById,
   deleteOrderById,
   getOrderDetail,
-  sendOrderEmail
+  sendOrderEmail,
+  getPurchaseSummary
 }

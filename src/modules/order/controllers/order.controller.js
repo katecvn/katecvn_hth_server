@@ -96,6 +96,19 @@ const assignOrderTo = async (req, res, next) => {
   }
 }
 
+const getPurchaseSummary = async (req, res, next) => {
+  const query = req.query
+  const { id } = req.user
+
+  try {
+    const result = await OrderService.getPurchaseSummary({ id, ...query })
+    return http.json(res, 'Thành công', STATUS_CODE.OK, result)
+  } catch (error) {
+    next(error)
+  }
+}
+
+
 module.exports = {
   getOrdersByDate,
   getOrdersByCustomer,
@@ -104,5 +117,6 @@ module.exports = {
   createOrder,
   updateOrderStatusById,
   updatePaymentStatusById,
-  deleteOrderById
+  deleteOrderById,
+  getPurchaseSummary
 }
