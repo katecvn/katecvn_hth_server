@@ -101,7 +101,7 @@ const getPurchaseSummary = async (req, res, next) => {
   const { id } = req.user
 
   try {
-    const result = await OrderService.getPurchaseSummary({ id, ...query })
+    const result = await OrderService.getPurchaseSummary({ customerId: id, ...query })
     return http.json(res, 'Thành công', STATUS_CODE.OK, result)
   } catch (error) {
     next(error)

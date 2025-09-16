@@ -598,7 +598,7 @@ const sendOrderEmail = async (order) => {
   }
 }
 
-const getPurchaseSummary = async ({ fromDate, toDate, status, shippingStatus, userId, customerId }) => {
+const getPurchaseSummary = async ({ fromDate, toDate, status, shippingStatus, userId, customerId, type }) => {
   try {
 
     const conditions = {}
@@ -608,7 +608,7 @@ const getPurchaseSummary = async ({ fromDate, toDate, status, shippingStatus, us
       conditions.createdAt = { [Op.between]: [startDate, endDate] }
     }
     if (userId) conditions.userId = userId
-    if (customerId) conditions.customerId = customerId
+    if (customerId && type == "customer_orders") conditions.customerId = customerId
     if (status) conditions.status = status
 
     const include = [
