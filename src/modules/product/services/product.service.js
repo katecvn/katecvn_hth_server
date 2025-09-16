@@ -678,10 +678,6 @@ const updateProduct = async (id, data) => {
     updater
   } = data
 
-  const variantIdsToUpdate = variants.filter((item) => !!item.variantId).map((item) => item.variantId)
-  const currentVariantIds = product?.variants.map((item) => item.id) || []
-  const variantIdsToDelete = currentVariantIds.filter((id) => !variantIdsToUpdate.includes(id))
-
   if (brandId) {
     const isExistBrand = await db.Brand.findByPk(brandId)
     if (!isExistBrand) throw new ServiceException({ brandId: message.notExist }, STATUS_CODE.NOT_FOUND)
@@ -700,7 +696,6 @@ const updateProduct = async (id, data) => {
   const isExistedSlug = await db.Product.findOne({
     where: { slug, id: { [Op.ne]: id } }
   })
-
   if (isExistedSlug) {
     throw new ServiceException({ slug: message.isExisted }, STATUS_CODE.UNPROCESSABLE_ENTITY)
   }
@@ -708,7 +703,6 @@ const updateProduct = async (id, data) => {
   const isExistedSku = await db.Product.findOne({
     where: { sku, id: { [Op.ne]: id } }
   })
-
   if (isExistedSku) {
     throw new ServiceException({ sku: message.isExisted }, STATUS_CODE.UNPROCESSABLE_ENTITY)
   }
@@ -738,13 +732,7 @@ const updateProduct = async (id, data) => {
       { transaction }
     )
 
-    await db.ProductSpecification.destroy({
-      where: {
-        productId: id
-      },
-      transaction
-    })
-
+    await db.ProductSpecification.destroy({ where: { productId: id }, transaction })
     if (specificationValues.length) {
       for (const specificationValue of specificationValues) {
         await db.ProductSpecification.create(
@@ -760,7 +748,6 @@ const updateProduct = async (id, data) => {
     }
 
     await db.ProductOptionMapping.destroy({ where: { productId: id }, transaction })
-
     if (optionMappings.length) {
       for (const optMapping of optionMappings) {
         await db.ProductOptionMapping.create(
@@ -774,116 +761,50 @@ const updateProduct = async (id, data) => {
       }
     }
 
-    if (variantIdsToDelete.length) {
-      await db.ProductVariant.destroy({
-        where: { id: { [Op.in]: variantIdsToDelete } },
-        transaction
-      })
+    // ==== CHỈ XỬ LÝ BIẾN THỂ GỐC ====
+    const baseVariant = variants.length ? variants[0] : {
+      sku,
+      stock,
+      salePrice,
+      originalPrice,
+      unit,
+      imageUrl: Array.isArray(imagesUrl) ? imagesUrl[0] : null,
+      status: 'active'
     }
 
-    if (variants.length) {
-      for (const variant of variants) {
-        const { variantId, sku, stock, salePrice, originalPrice, position = 0, imageUrl, status, attributeValues = [] } = variant
-
-        const where = { sku }
-
-        if (variantId) {
-          where.id = { [Op.ne]: variantId }
-        }
-
-        const isExistedSku = await db.ProductVariant.findOne({
-          where
-        })
-
-        if (isExistedSku) {
-          throw new ServiceException({ sku: `Mã biến thể ${sku} đã tồn tại` }, STATUS_CODE.BAD_REQUEST)
-        }
-
-        if (variantId) {
-          const productVariant = await db.ProductVariant.findByPk(variantId)
-          if (!productVariant) {
-            throw new ServiceException({ variantId: message.notExist }, STATUS_CODE.NOT_FOUND)
-          }
-
-          productVariant.update(
-            {
-              sku,
-              stock,
-              salePrice,
-              originalPrice,
-              position,
-              imageUrl,
-              status,
-              updatedBy: updater
-            },
-            { transaction }
-          )
-
-          await db.VariantAttributeAssignment.destroy({
-            where: { variantId },
-            transaction
-          })
-
-          if (attributeValues.length) {
-            for (const attributeValue of attributeValues) {
-              const isExistAttributeValue = await db.AttributeValue.findOne({
-                where: { id: attributeValue.id }
-              })
-
-              if (!isExistAttributeValue) {
-                throw new ServiceException({ attributeValues: `Thuộc tính ${attributeValue.id} không tồn tại` }, STATUS_CODE.NOT_FOUND)
-              }
-
-              await db.VariantAttributeAssignment.create(
-                {
-                  variantId,
-                  attributeValueId: attributeValue.id,
-                  customValue: attributeValue.customValue
-                },
-                { transaction }
-              )
-            }
-          }
-        } else {
-          const newProductVariant = await db.ProductVariant.create(
-            {
-              productId: id,
-              sku,
-              stock,
-              unit,
-              salePrice,
-              originalPrice,
-              position,
-              imageUrl,
-              status,
-              createdBy: updater
-            },
-            { transaction }
-          )
-
-          if (attributeValues.length) {
-            for (const attributeValue of attributeValues) {
-              const isExistAttributeValue = await db.AttributeValue.findOne({
-                where: { id: attributeValue.id }
-              })
-
-              if (!isExistAttributeValue) {
-                throw new ServiceException({ attributeValues: `Thuộc tính ${attributeValue.id} không tồn tại` }, STATUS_CODE.NOT_FOUND)
-              }
-
-              await db.VariantAttributeAssignment.create(
-                {
-                  variantId: newProductVariant.id,
-                  attributeValueId: attributeValue.id,
-                  customValue: attributeValue.customValue
-                },
-                { transaction }
-              )
-            }
-          }
-        }
-      }
+    if (product.variants && product.variants.length > 0) {
+      // update biến thể gốc
+      await product.variants[0].update(
+        {
+          sku: baseVariant.sku || sku,
+          stock: baseVariant.stock || stock,
+          salePrice: baseVariant.salePrice || salePrice,
+          originalPrice: baseVariant.originalPrice || originalPrice,
+          unit: baseVariant.unit || unit,
+          imageUrl: baseVariant.imageUrl,
+          status: baseVariant.status || 'active',
+          updatedBy: updater
+        },
+        { transaction }
+      )
+    } else {
+      // nếu chưa có thì tạo mới
+      await db.ProductVariant.create(
+        {
+          productId: id,
+          sku: baseVariant.sku || sku,
+          stock: baseVariant.stock || stock,
+          salePrice: baseVariant.salePrice || salePrice,
+          originalPrice: baseVariant.originalPrice || originalPrice,
+          unit: baseVariant.unit || unit,
+          imageUrl: baseVariant.imageUrl,
+          status: baseVariant.status || 'active',
+          createdBy: updater
+        },
+        { transaction }
+      )
     }
+
     await transaction.commit()
     return product
   } catch (error) {
@@ -891,6 +812,7 @@ const updateProduct = async (id, data) => {
     throw new ServiceException(error.message, error.status)
   }
 }
+
 
 const deleteProduct = async (id) => {
   const product = await db.Product.findByPk(id)

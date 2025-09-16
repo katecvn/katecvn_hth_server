@@ -119,8 +119,12 @@ const PERMISSIONS = {
   // Lịch sử giảm giá theo nhóm khách hàng
   CUSTOMER_GROUP_DISCOUNT_HISTORY: 'customer_group_discount_history',
   CUSTOMER_GROUP_DISCOUNT_HISTORY_VIEW: 'customer_group_discount_history_view',
-  CUSTOMER_GROUP_DISCOUNT_HISTORY_DETAIL: 'customer_group_discount_history_detail'
-  
+  CUSTOMER_GROUP_DISCOUNT_HISTORY_DETAIL: 'customer_group_discount_history_detail',
+
+  // Cài đặt
+  SETTING: 'setting',
+  SETTING_MENU: 'setting_menu',
+  SETTING_PAGE: 'setting_page',  
 }
 
 module.exports = PERMISSIONS

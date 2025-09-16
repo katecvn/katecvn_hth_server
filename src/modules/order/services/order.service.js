@@ -160,6 +160,9 @@ const createNewUserAndAddress = async (name, phone, email, address) => {
   }
 }
 
+// Thêm import
+const { CustomerGroupDiscount } = db
+
 const createOrder = async (data) => {
   const defaultStatus = ORDER_STATUS.PENDING
   const paymentStatus = PAYMENT_STATUS.UNPAID
@@ -181,7 +184,8 @@ const createOrder = async (data) => {
     discounts
   } = data
 
-  // Xử lý khách hàng
+  // ====== Xử lý khách hàng ======
+  let customerGroupId = null
   if (!customerId) {
     if (customerEmail) {
       const user = await db.User.findOne({ where: { email: customerEmail } })
@@ -190,23 +194,26 @@ const createOrder = async (data) => {
           throw new ServiceException({ email: `Tài khoản có email ${customerEmail} đang bị khóa` }, STATUS_CODE.BAD_REQUEST)
         }
         customerId = user.id
+        customerGroupId = user.customerGroupId || null   // <-- lấy group
       } else {
         const newCustomer = await createNewUserAndAddress(customerName, customerPhone, customerEmail, customerAddress)
         customerId = newCustomer.id
+        customerGroupId = newCustomer.customerGroupId || null
       }
     }
+  } else {
+    const user = await db.User.findByPk(customerId)
+    customerGroupId = user?.customerGroupId || null
   }
 
-  // Lấy ProductVariant và enrich data cho order items
+  // ====== Lấy ProductVariant và enrich data cho order items ======
   const productVariants = await db.ProductVariant.findAll({
-    where: {
-      id: items.map((item) => item.productVariantId)
-    },
+    where: { id: items.map((item) => item.productVariantId) },
     include: [
       {
         model: db.Product,
         as: 'product',
-        attributes: ['id', 'name']
+        attributes: ['id', 'name', 'salePrice', 'originalPrice']
       },
       {
         model: db.AttributeValue,
@@ -217,26 +224,49 @@ const createOrder = async (data) => {
     attributes: ['id', 'sku', 'unit', 'originalPrice', 'salePrice']
   })
 
-  const enrichedProductVariants = productVariants.map((variant) => {
-    const item = items.find((item) => item.productVariantId === variant.id)
+  const enrichedProductVariants = []
+  for (const variant of productVariants) {
+    const item = items.find((i) => i.productVariantId === variant.id)
     const quantity = item?.quantity || 0
-    const subTotal = variant.salePrice * quantity
 
-    return {
+    let basePrice = Number(variant.salePrice || variant.originalPrice || 0)
+    let finalPrice = basePrice
+
+    // Nếu có customerGroupId thì áp dụng giảm giá nhóm
+    if (customerGroupId) {
+      const activeDiscount = await CustomerGroupDiscount.findOne({
+        where: { customerGroupId, productId: variant.product.id, status: 'active' }
+      })
+      if (activeDiscount) {
+        if (activeDiscount.discountType === 'percentage') {
+          finalPrice = basePrice - (basePrice * Number(activeDiscount.discountValue)) / 100
+        } else if (activeDiscount.discountType === 'fixed') {
+          finalPrice = basePrice - Number(activeDiscount.discountValue)
+        }
+        if (finalPrice < 0) finalPrice = 0
+      }
+    }
+
+    const subTotal = finalPrice * quantity
+    enrichedProductVariants.push({
       ...variant.toJSON(),
       quantity,
       subTotal,
-      productId: variant.id
-    }
-  })
+      productId: variant.productId,
+      appliedPrice: finalPrice   // giữ lại để tạo orderItem
+    })
+  }
 
   const subTotal = enrichedProductVariants.reduce((sum, p) => sum + p.subTotal, 0)
 
-  // Áp dụng mã giảm giá (nếu có)
-  const discountResponse = discounts?.length > 0 ? await DiscountService.applyDiscount({ codes: discounts, items }) : null
+  // ====== Áp dụng discount code (nếu có) ======
+  const discountResponse = discounts?.length > 0
+    ? await DiscountService.applyDiscount({ codes: discounts, items })
+    : null
 
   const totalAmount = discountResponse ? discountResponse.finalTotal : subTotal
 
+  // ====== Transaction create order ======
   const transaction = await db.sequelize.transaction()
   try {
     const order = await db.Order.create(
@@ -256,16 +286,17 @@ const createOrder = async (data) => {
     )
 
     for (const item of enrichedProductVariants) {
-      const { id, sku, product, unit, quantity, salePrice, originalPrice, attributeValues } = item
-      const totalPrice = Number(quantity) * Number(salePrice)
+      const { id, sku, product, unit, quantity, appliedPrice, originalPrice, attributeValues } = item
+      const totalPrice = Number(quantity) * Number(appliedPrice)
+
       await order.createOrderItem(
         {
           productVariantId: id,
-          productSku: sku ? sku : '',
+          productSku: sku || '',
           productName: product?.name,
-          productUnit: unit ? unit : '',
+          productUnit: unit || '',
           quantity,
-          salePrice,
+          salePrice: appliedPrice,      // <-- giá đã áp dụng discount nhóm
           originalPrice,
           totalPrice,
           attributes: JSON.stringify(attributeValues)
@@ -275,26 +306,15 @@ const createOrder = async (data) => {
     }
 
     await order.createShipping(
-      {
-        trackingNumber,
-        shippingMethod,
-        customerName,
-        customerPhone,
-        customerAddress
-      },
+      { trackingNumber, shippingMethod, customerName, customerPhone, customerAddress },
       { transaction }
     )
 
     await order.createPayment(
-      {
-        paymentMethod,
-        amount: totalAmount,
-        paymentStatus
-      },
+      { paymentMethod, amount: totalAmount, paymentStatus },
       { transaction }
     )
 
-    // Lưu discount (nếu có)
     if (discountResponse) {
       for (const discountItem of discountResponse?.appliedDiscounts) {
         await db.OrderDiscount.create(
@@ -305,15 +325,8 @@ const createOrder = async (data) => {
           },
           { transaction }
         )
-        // Cập nhật usedCount trong discount
         const discount = await db.Discount.findByPk(discountItem.id)
-        const usedCount = discount.usedCount + 1
-        await discount.update(
-          {
-            usedCount
-          },
-          { transaction }
-        )
+        await discount.update({ usedCount: discount.usedCount + 1 }, { transaction })
       }
     }
 
@@ -324,6 +337,7 @@ const createOrder = async (data) => {
     throw new Error(error.message)
   }
 }
+
 
 const findOrder = async ({ id, detail = false, userId = null }) => {
   const conditions = { id }
