@@ -197,10 +197,10 @@ const createOrder = async (data) => {
     customerEmail = null,
     customerAddress,
     paymentMethod,
-    discounts
+    discounts,
+    orderForDate
   } = data
 
-  // ====== Xử lý khách hàng ======
   let customerGroupId = null
   if (!customerId) {
     if (customerEmail) {
@@ -210,7 +210,7 @@ const createOrder = async (data) => {
           throw new ServiceException({ email: `Tài khoản có email ${customerEmail} đang bị khóa` }, STATUS_CODE.BAD_REQUEST)
         }
         customerId = user.id
-        customerGroupId = user.customerGroupId || null   // <-- lấy group
+        customerGroupId = user.customerGroupId || null
       } else {
         const newCustomer = await createNewUserAndAddress(customerName, customerPhone, customerEmail, customerAddress)
         customerId = newCustomer.id
@@ -222,7 +222,6 @@ const createOrder = async (data) => {
     customerGroupId = user?.customerGroupId || null
   }
 
-  // ====== Lấy ProductVariant và enrich data cho order items ======
   const productVariants = await db.ProductVariant.findAll({
     where: { id: items.map((item) => item.productVariantId) },
     include: [
@@ -248,7 +247,6 @@ const createOrder = async (data) => {
     let basePrice = Number(variant.salePrice || variant.originalPrice || 0)
     let finalPrice = basePrice
 
-    // Nếu có customerGroupId thì áp dụng giảm giá nhóm
     if (customerGroupId) {
       const activeDiscount = await CustomerGroupDiscount.findOne({
         where: { customerGroupId, productId: variant.product.id, status: 'active' }
@@ -269,20 +267,18 @@ const createOrder = async (data) => {
       quantity,
       subTotal,
       productId: variant.productId,
-      appliedPrice: finalPrice   // giữ lại để tạo orderItem
+      appliedPrice: finalPrice
     })
   }
 
   const subTotal = enrichedProductVariants.reduce((sum, p) => sum + p.subTotal, 0)
 
-  // ====== Áp dụng discount code (nếu có) ======
   const discountResponse = discounts?.length > 0
     ? await DiscountService.applyDiscount({ codes: discounts, items })
     : null
 
   const totalAmount = discountResponse ? discountResponse.finalTotal : subTotal
 
-  // ====== Transaction create order ======
   const transaction = await db.sequelize.transaction()
   try {
     const order = await db.Order.create(
@@ -295,6 +291,7 @@ const createOrder = async (data) => {
         status: defaultStatus,
         paymentStatus,
         date: now,
+        orderForDate,
         note,
         createdBy: customerId
       },
@@ -312,7 +309,7 @@ const createOrder = async (data) => {
           productName: product?.name,
           productUnit: unit || '',
           quantity,
-          salePrice: appliedPrice,      // <-- giá đã áp dụng discount nhóm
+          salePrice: appliedPrice,
           originalPrice,
           totalPrice,
           attributes: JSON.stringify(attributeValues)

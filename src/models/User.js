@@ -59,6 +59,7 @@ module.exports = (sequelize, DataTypes) => {
       username: DataTypes.STRING,
       password: DataTypes.STRING,
       status: DataTypes.STRING,
+      rewardPoints: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
       customerGroupId: {
         type: DataTypes.BIGINT,
         allowNull: true

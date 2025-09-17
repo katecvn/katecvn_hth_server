@@ -41,6 +41,7 @@ module.exports = (sequelize, DataTypes) => {
       status: DataTypes.STRING,
       paymentStatus: DataTypes.STRING,
       date: DataTypes.DATE,
+      orderForDate: DataTypes.DATE,
       note: DataTypes.STRING,
       createdBy: DataTypes.BIGINT,
       updatedBy: DataTypes.BIGINT

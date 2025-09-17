@@ -125,6 +125,8 @@ const PERMISSIONS = {
   SETTING: 'setting',
   SETTING_MENU: 'setting_menu',
   SETTING_PAGE: 'setting_page',  
+  SETTING_REWARD_RULE: 'setting_reward_rule',
+  REWARD_HISTORY_VIEW: 'reward_history_view',
 }
 
 module.exports = PERMISSIONS

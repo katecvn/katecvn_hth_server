@@ -45,6 +45,8 @@ const SitemapRoutes = require('../modules/sitemap/routes/sitemap.routes')
 const CustomerGroupRoutes = require('../modules/customer_group/routes/customerGroup.routes')
 const CustomerGroupDiscountRoutes = require('../modules/customer_group_discount/routes/customerGroupDiscount.routes')
 const CustomerGroupDiscountHistoryRoutes = require('../modules/customer_group_discount_histories/routes/customerGroupDiscountHistory.routes')
+const RewardPointsRulesRoutes = require('../modules/reward_point_rules/routes/rewardPointRule.routes')   
+const RewardPointHistoryRoutes = require('../modules/reward_point_histories/routes/rewardPointHistory.routes')
 
 const { forgotPasswordValidate } = require('../validates/ForgotPasswordValidate')
 const { resetPasswordValidate } = require('../validates/ResetPasswordValidate')
@@ -138,5 +140,7 @@ router.use(SitemapRoutes)
 router.use(CustomerGroupRoutes)
 router.use(CustomerGroupDiscountRoutes)
 router.use(CustomerGroupDiscountHistoryRoutes)
+router.use(RewardPointsRulesRoutes)
+router.use(RewardPointHistoryRoutes)
 
 module.exports = router
