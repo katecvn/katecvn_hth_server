@@ -17,30 +17,38 @@ module.exports = (sequelize, DataTypes) => {
 
   RewardPointHistory.init(
     {
+      id: { type: DataTypes.BIGINT, primaryKey: true, autoIncrement: true },
+
       userId: {
         type: DataTypes.BIGINT,
         allowNull: false
       },
+
       orderId: {
         type: DataTypes.BIGINT,
         allowNull: true
       },
+
       ruleType: {
         type: DataTypes.ENUM('order_value', 'time_slot'),
         allowNull: false
       },
+
       minOrderValue: {
         type: DataTypes.DECIMAL(20, 2),
         allowNull: true
       },
+
       beforeTime: {
         type: DataTypes.TIME,
         allowNull: true
       },
+
       points: {
         type: DataTypes.INTEGER,
         allowNull: false
       },
+
       createdAt: DataTypes.DATE,
       updatedAt: DataTypes.DATE
     },

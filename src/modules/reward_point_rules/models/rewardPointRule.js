@@ -4,10 +4,6 @@ const { Model } = require('sequelize')
 module.exports = (sequelize, DataTypes) => {
   class RewardPointRule extends Model {
     static associate(models) {
-      RewardPointRule.hasMany(models.RewardPointHistory, {
-        foreignKey: 'ruleId',
-        as: 'histories'
-      })
     }
   }
 

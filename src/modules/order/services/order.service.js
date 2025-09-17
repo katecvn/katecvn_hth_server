@@ -373,7 +373,7 @@ const findOrder = async ({ id, detail = false, userId = null }) => {
 
 const updateOrderStatusById = async (id, data, { id: updater }) => {
   const { status } = data
-  const order = await findOrder({ id })
+  const order = await findOrder({ id, detail: true })
 
   const transaction = await db.sequelize.transaction()
   try {
@@ -381,10 +381,88 @@ const updateOrderStatusById = async (id, data, { id: updater }) => {
       {
         status,
         userId: updater,
-        updatedBy: updater
+        updatedBy: updater,
       },
       { transaction }
     )
+
+    if (status === ORDER_STATUS.ACCEPTED && order.customerId) {
+      const rules = await db.RewardPointRule.findAll({
+        where: { status: 'active' },
+      })
+
+      let totalPoints = 0
+
+      const valueRules = rules.filter((r) => r.type === 'order_value')
+      if (valueRules.length > 0) {
+        const matchedValueRule = valueRules
+          .filter((r) => order.totalAmount >= Number(r.minOrderValue || 0))
+          .sort((a, b) => Number(b.minOrderValue) - Number(a.minOrderValue))[0]
+        if (matchedValueRule) {
+          totalPoints += Number(matchedValueRule.points || 0)
+          await db.RewardPointHistory.create(
+            {
+              userId: order.customerId,
+              orderId: order.id,
+              ruleType: matchedValueRule.type,
+              minOrderValue: matchedValueRule.minOrderValue,
+              points: matchedValueRule.points,
+            },
+            { transaction }
+          )
+        }
+      }
+
+      const timeRules = rules.filter((r) => r.type === 'time_slot')
+      if (timeRules.length > 0 && order.orderForDate) {
+        const createdAt = new Date(order.createdAt)
+        const targetDate = new Date(order.orderForDate)
+
+        let matchedTimeRule = null
+
+        if (createdAt.toDateString() === targetDate.toDateString()) {
+          const validRules = timeRules.filter((r) => {
+            if (!r.beforeTime) return false
+            const [hh, mm] = r.beforeTime.split(':')
+            const cutoff = new Date(createdAt)
+            cutoff.setHours(Number(hh), Number(mm), 0, 0)
+            return createdAt <= cutoff
+          })
+          matchedTimeRule =
+            validRules.sort(
+              (a, b) =>
+                new Date(`1970-01-01T${a.beforeTime}:00`) -
+                new Date(`1970-01-01T${b.beforeTime}:00`)
+            )[0] || null
+        } else if (createdAt < targetDate) {
+          matchedTimeRule = timeRules.sort(
+            (a, b) => Number(b.points) - Number(a.points)
+          )[0]
+        }
+
+        if (matchedTimeRule) {
+          totalPoints += Number(matchedTimeRule.points || 0)
+          await db.RewardPointHistory.create(
+            {
+              userId: order.customerId,
+              orderId: order.id,
+              ruleType: matchedTimeRule.type,
+              beforeTime: matchedTimeRule.beforeTime,
+              points: matchedTimeRule.points,
+            },
+            { transaction }
+          )
+        }
+      }
+
+      if (totalPoints > 0) {
+        await db.User.increment(
+          { rewardPoints: totalPoints },
+          { where: { id: order.customerId }, transaction }
+        )
+      }
+    }
+
     await transaction.commit()
     return true
   } catch (error) {
@@ -392,6 +470,7 @@ const updateOrderStatusById = async (id, data, { id: updater }) => {
     throw new Error(error.message)
   }
 }
+
 
 const updateOrderPaymentStatusById = async (data, { id: updater }) => {
   const { id, paymentStatus } = data
