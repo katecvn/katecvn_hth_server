@@ -27,6 +27,7 @@ const modulePaths = [
   '../modules/customer_group_discount_histories/models',
   '../modules/reward_point_rules/models',
   '../modules/reward_point_histories/models',
+  '../modules/invoice/models',
   
 ] // Có thể thêm module khác tại đây
 

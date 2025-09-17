@@ -134,6 +134,15 @@ const PERMISSIONS = {
   REWARD_RULE_DELETE: 'reward_rule_delete',
   REWARD_HISTORY_VIEW: 'reward_history_view',
 
+  // Hóa đơn
+  INVOICE: 'invoice',
+  INVOICE_CREATE: 'invoice_create',
+  INVOICE_VIEW: 'invoice_view',
+  INVOICE_UPDATE: 'invoice_update',
+  INVOICE_MANAGE_STATUS: 'invoice_manage_status',
+  INVOICE_DELETE: 'invoice_delete',
+
+
 }
 
 module.exports = PERMISSIONS
