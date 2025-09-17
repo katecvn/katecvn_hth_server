@@ -121,12 +121,19 @@ const PERMISSIONS = {
   CUSTOMER_GROUP_DISCOUNT_HISTORY_VIEW: 'customer_group_discount_history_view',
   CUSTOMER_GROUP_DISCOUNT_HISTORY_DETAIL: 'customer_group_discount_history_detail',
 
-  // Cài đặt
+  // Cài đặt
   SETTING: 'setting',
   SETTING_MENU: 'setting_menu',
-  SETTING_PAGE: 'setting_page',  
-  SETTING_REWARD_RULE: 'setting_reward_rule',
+  SETTING_PAGE: 'setting_page',
+
+  // Điểm thưởng
+  REWARD: 'reward',
+  REWARD_RULE_VIEW: 'reward_rule_view',
+  REWARD_RULE_CREATE: 'reward_rule_create',
+  REWARD_RULE_UPDATE: 'reward_rule_update',
+  REWARD_RULE_DELETE: 'reward_rule_delete',
   REWARD_HISTORY_VIEW: 'reward_history_view',
+
 }
 
 module.exports = PERMISSIONS

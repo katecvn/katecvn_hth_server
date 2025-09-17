@@ -10,14 +10,14 @@ const router = express.Router()
 router.get(
   '/reward-point-rules',
   authenticate,
-  authorize([PERMISSIONS.SETTING_REWARD_RULE]),
+  authorize([PERMISSIONS.REWARD_RULE_VIEW]),
   RewardPointRuleController.getRules
 )
 
 router.post(
   '/reward-point-rules',
   authenticate,
-  authorize([PERMISSIONS.SETTING_REWARD_RULE]),
+  authorize([PERMISSIONS.REWARD_RULE_CREATE]),
   RewardPointRuleValidate.create,
   validate,
   RewardPointRuleController.createRule
@@ -26,7 +26,7 @@ router.post(
 router.put(
   '/reward-point-rules/:id',
   authenticate,
-  authorize([PERMISSIONS.SETTING_REWARD_RULE]),
+  authorize([PERMISSIONS.REWARD_RULE_UPDATE]),
   RewardPointRuleValidate.update,
   validate,
   RewardPointRuleController.updateRule
@@ -35,7 +35,7 @@ router.put(
 router.delete(
   '/reward-point-rules/:id',
   authenticate,
-  authorize([PERMISSIONS.SETTING_REWARD_RULE]),
+  authorize([PERMISSIONS.REWARD_RULE_DELETE]),
   RewardPointRuleController.deleteRule
 )
 
