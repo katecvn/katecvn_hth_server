@@ -378,11 +378,7 @@ const updateOrderStatusById = async (id, data, { id: updater }) => {
   const transaction = await db.sequelize.transaction()
   try {
     await order.update(
-      {
-        status,
-        userId: updater,
-        updatedBy: updater,
-      },
+      { status, userId: updater, updatedBy: updater },
       { transaction }
     )
 
@@ -397,14 +393,14 @@ const updateOrderStatusById = async (id, data, { id: updater }) => {
       if (valueRules.length > 0) {
         const matchedValueRule = valueRules
           .filter((r) => order.totalAmount >= Number(r.minOrderValue || 0))
-          .sort((a, b) => Number(b.minOrderValue) - Number(a.minOrderValue))[0]
+          .sort((a, b) => Number(b.minOrderValue || 0) - Number(a.minOrderValue || 0))[0]
         if (matchedValueRule) {
           totalPoints += Number(matchedValueRule.points || 0)
           await db.RewardPointHistory.create(
             {
               userId: order.customerId,
               orderId: order.id,
-              ruleType: matchedValueRule.type,
+              ruleType: 'order_value',
               minOrderValue: matchedValueRule.minOrderValue,
               points: matchedValueRule.points,
             },
@@ -413,31 +409,31 @@ const updateOrderStatusById = async (id, data, { id: updater }) => {
         }
       }
 
-      const timeRules = rules.filter((r) => r.type === 'time_slot')
+      const timeRules = rules.filter((r) => r.type === 'time_slot' && r.beforeTime)
       if (timeRules.length > 0 && order.orderForDate) {
         const createdAt = new Date(order.createdAt)
         const targetDate = new Date(order.orderForDate)
 
+        const startOfCreated = new Date(createdAt.getFullYear(), createdAt.getMonth(), createdAt.getDate())
+        const startOfTarget = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate())
+        const leadDays = Math.round((startOfTarget - startOfCreated) / (1000 * 60 * 60 * 24))
         let matchedTimeRule = null
 
-        if (createdAt.toDateString() === targetDate.toDateString()) {
-          const validRules = timeRules.filter((r) => {
-            if (!r.beforeTime) return false
-            const [hh, mm] = r.beforeTime.split(':')
-            const cutoff = new Date(createdAt)
-            cutoff.setHours(Number(hh), Number(mm), 0, 0)
-            return createdAt <= cutoff
-          })
-          matchedTimeRule =
-            validRules.sort(
-              (a, b) =>
-                new Date(`1970-01-01T${a.beforeTime}:00`) -
-                new Date(`1970-01-01T${b.beforeTime}:00`)
-            )[0] || null
-        } else if (createdAt < targetDate) {
-          matchedTimeRule = timeRules.sort(
-            (a, b) => Number(b.points) - Number(a.points)
-          )[0]
+        if (leadDays >= 2) {
+          matchedTimeRule = timeRules.sort((a, b) => Number(b.points) - Number(a.points))[0] || null
+        } else {
+          const curDate = new Date(order.createdAt)
+          const curMin = curDate.getUTCHours() * 60 + curDate.getUTCMinutes()
+          const withCutoff = timeRules
+            .map((r) => {
+              const [hh, mm] = r.beforeTime.split(':')
+              const cutoffMin = Number(hh) * 60 + Number(mm)
+              return { rule: r, cutoffMin }
+            })
+            .filter((x) => curMin <= x.cutoffMin)
+            .sort((a, b) => a.cutoffMin - b.cutoffMin)
+
+          matchedTimeRule = withCutoff[0]?.rule || null
         }
 
         if (matchedTimeRule) {
@@ -446,7 +442,7 @@ const updateOrderStatusById = async (id, data, { id: updater }) => {
             {
               userId: order.customerId,
               orderId: order.id,
-              ruleType: matchedTimeRule.type,
+              ruleType: 'time_slot',
               beforeTime: matchedTimeRule.beforeTime,
               points: matchedTimeRule.points,
             },
