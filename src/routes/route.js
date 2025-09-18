@@ -89,6 +89,7 @@ router.put('/user/update-profile', authenticate, UserValidate.updateProfile, val
 router.post('/user/address/create', authenticate, UserValidate.addressBody, validate, UserController.createUserAddress)
 router.put('/user/address/update/:id', authenticate, UserValidate.addressBody, validate, UserController.updateUserAddress)
 router.delete('/user/address/destroy/:id', authenticate, UserController.deleteUserAddress)
+router.get('/user/reward-points', authenticate, UserController.getUserRewardPoints)
 
 router.get('/post/shows', authenticate, authorize([PERMISSIONS.POST_VIEW]), PostController.getPosts)
 router.get('/post/public/shows', PostController.getPublicPosts)

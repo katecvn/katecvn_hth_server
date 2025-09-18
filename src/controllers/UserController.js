@@ -203,6 +203,32 @@ const deleteUserAddress = async (req, res) => {
   }
 }
 
+const getUserRewardPoints = async (req, res) => {
+  try {
+    const { id: userId } = req.user
+    const user = await UserService.getUserById({ id: userId })
+
+    if (!user) {
+      return sendResponse(res, {
+        status: STATUS_CODE.NOT_FOUND,
+        messages: message.notFound
+      })
+
+    }
+
+    return sendResponse(res, {
+      status: STATUS_CODE.OK,
+      data: { rewardPoints: user.rewardPoints }
+    })
+  } catch (error) {
+    return sendResponse(res, {
+      status: STATUS_CODE.INTERNAL_SERVER_ERROR,
+      messages: error.message
+    })
+  }
+}
+
+
 module.exports = {
   create,
   show,
@@ -214,5 +240,6 @@ module.exports = {
   getUserProfile,
   createUserAddress,
   updateUserAddress,
-  deleteUserAddress
+  deleteUserAddress,
+  getUserRewardPoints
 }
