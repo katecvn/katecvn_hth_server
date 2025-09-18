@@ -30,7 +30,7 @@ const updateStatus = [
     .notEmpty()
     .withMessage(message.notEmpty)
     .bail()
-    .isIn(['draft', 'pending', 'approved', 'cancelled'])
+    .isIn(['draft', 'issued', 'cancelled'])
     .withMessage('Trạng thái không hợp lệ'),
   param('id').custom(async (id) => {
     const invoice = await db.Invoice.findByPk(id)

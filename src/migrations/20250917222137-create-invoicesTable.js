@@ -24,7 +24,6 @@ module.exports = {
         },
         invoiceNumber: {
           type: Sequelize.STRING,
-          unique: true,
           allowNull: false
         },
         issueDate: {
@@ -58,7 +57,6 @@ module.exports = {
           type: Sequelize.STRING(50),
           allowNull: false,
           defaultValue: 'draft' 
-          // ENUM('draft', 'pending', 'approved', 'cancelled')
         },
         note: {
           type: Sequelize.STRING,

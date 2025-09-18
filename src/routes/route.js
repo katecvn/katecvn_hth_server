@@ -47,6 +47,7 @@ const CustomerGroupDiscountRoutes = require('../modules/customer_group_discount/
 const CustomerGroupDiscountHistoryRoutes = require('../modules/customer_group_discount_histories/routes/customerGroupDiscountHistory.routes')
 const RewardPointsRulesRoutes = require('../modules/reward_point_rules/routes/rewardPointRule.routes')   
 const RewardPointHistoryRoutes = require('../modules/reward_point_histories/routes/rewardPointHistory.routes')
+const InvoiceRoutes = require('../modules/invoice/routes/invoice.routes')
 
 const { forgotPasswordValidate } = require('../validates/ForgotPasswordValidate')
 const { resetPasswordValidate } = require('../validates/ResetPasswordValidate')
@@ -142,5 +143,6 @@ router.use(CustomerGroupDiscountRoutes)
 router.use(CustomerGroupDiscountHistoryRoutes)
 router.use(RewardPointsRulesRoutes)
 router.use(RewardPointHistoryRoutes)
+router.use(InvoiceRoutes)
 
 module.exports = router
