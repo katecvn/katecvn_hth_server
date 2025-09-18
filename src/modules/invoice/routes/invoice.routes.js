@@ -34,7 +34,7 @@ router.post(
 router.post(
   '/invoice/bulk-create',
   authenticate,
-  authorize([PERMISSIONS.INVOICE_CREATE]),
+  authorize([PERMISSIONS.INVOICE_CREATE, PERMISSIONS.INVOICE_EXPORT], 'some'),
   InvoiceValidate.bulkCreate,
   validate,
   InvoiceController.bulkCreateInvoices

@@ -143,6 +143,7 @@ const PERMISSIONS = {
   INVOICE_UPDATE: 'invoice_update',
   INVOICE_MANAGE_STATUS: 'invoice_manage_status',
   INVOICE_DELETE: 'invoice_delete',
+  INVOICE_EXPORT: 'invoice_export',
 
 
 }
