@@ -1,3 +1,4 @@
+// controllers/invoice.controller.js
 const { STATUS_CODE } = require('../../../constants')
 const http = require('../../../utils/http')
 const InvoiceService = require('../services/invoice.service')
@@ -24,11 +25,17 @@ const getInvoiceById = async (req, res, next) => {
 
 const createInvoice = async (req, res, next) => {
   try {
-    await InvoiceService.createInvoice({
-      ...req.body,
-      createdBy: req.user?.id || null
-    })
+    await InvoiceService.createInvoice({ ...req.body, createdBy: req.user?.id || null })
     return http.json(res, 'Tạo hóa đơn thành công', STATUS_CODE.OK)
+  } catch (error) {
+    next(error)
+  }
+}
+
+const bulkCreateInvoices = async (req, res, next) => {
+  try {
+    const result = await InvoiceService.bulkCreateInvoices(req.body, req.user?.id || null)
+    return http.json(res, 'Tạo hóa đơn hàng loạt thành công', STATUS_CODE.OK, { count: result.length, invoices: result })
   } catch (error) {
     next(error)
   }
@@ -69,7 +76,8 @@ module.exports = {
   getInvoices,
   getInvoiceById,
   createInvoice,
+  bulkCreateInvoices,
   updateInvoice,
   updateStatus,
-  deleteById
+  deleteById,
 }

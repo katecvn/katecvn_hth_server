@@ -1,3 +1,4 @@
+// routes/invoice.route.js
 const express = require('express')
 const InvoiceController = require('../controllers/invoice.controller')
 const InvoiceValidate = require('../validations/invoice.validation')
@@ -28,6 +29,15 @@ router.post(
   InvoiceValidate.create,
   validate,
   InvoiceController.createInvoice
+)
+
+router.post(
+  '/invoice/bulk-create',
+  authenticate,
+  authorize([PERMISSIONS.INVOICE_CREATE]),
+  InvoiceValidate.bulkCreate,
+  validate,
+  InvoiceController.bulkCreateInvoices
 )
 
 router.put(
