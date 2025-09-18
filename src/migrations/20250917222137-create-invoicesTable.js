@@ -56,9 +56,29 @@ module.exports = {
         status: {
           type: Sequelize.STRING(50),
           allowNull: false,
-          defaultValue: 'draft' 
+          defaultValue: 'draft'
         },
         note: {
+          type: Sequelize.STRING,
+          allowNull: true
+        },
+        companyName: {
+          type: Sequelize.STRING,
+          allowNull: true
+        },
+        companyTaxCode: {
+          type: Sequelize.STRING,
+          allowNull: true
+        },
+        companyAddress: {
+          type: Sequelize.STRING,
+          allowNull: true
+        },
+        companyEmail: {
+          type: Sequelize.STRING,
+          allowNull: true
+        },
+        companyPhone: {
           type: Sequelize.STRING,
           allowNull: true
         },

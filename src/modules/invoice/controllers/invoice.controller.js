@@ -24,7 +24,10 @@ const getInvoiceById = async (req, res, next) => {
 
 const createInvoice = async (req, res, next) => {
   try {
-    await InvoiceService.createInvoice({ ...req.body, createdBy: req.user.id })
+    await InvoiceService.createInvoice({
+      ...req.body,
+      createdBy: req.user?.id || null
+    })
     return http.json(res, 'Tạo hóa đơn thành công', STATUS_CODE.OK)
   } catch (error) {
     next(error)
@@ -34,7 +37,7 @@ const createInvoice = async (req, res, next) => {
 const updateInvoice = async (req, res, next) => {
   const { id } = req.params
   try {
-    await InvoiceService.updateInvoice(id, req.body, req.user.id)
+    await InvoiceService.updateInvoice(id, req.body, req.user?.id || null)
     return http.json(res, 'Cập nhật hóa đơn thành công', STATUS_CODE.OK)
   } catch (error) {
     next(error)
@@ -45,7 +48,7 @@ const updateStatus = async (req, res, next) => {
   const { status } = req.body
   const { id } = req.params
   try {
-    await InvoiceService.updateStatus(id, status, req.user.id)
+    await InvoiceService.updateStatus(id, status, req.user?.id || null)
     return http.json(res, 'Cập nhật trạng thái thành công', STATUS_CODE.OK)
   } catch (error) {
     next(error)

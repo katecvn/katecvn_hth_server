@@ -31,6 +31,11 @@ module.exports = (sequelize, DataTypes) => {
       totalAmount: DataTypes.DECIMAL(20, 2),
       status: DataTypes.STRING,
       note: DataTypes.STRING,
+      companyName: DataTypes.STRING,
+      companyTaxCode: DataTypes.STRING,
+      companyAddress: DataTypes.STRING,
+      companyEmail: DataTypes.STRING,
+      companyPhone: DataTypes.STRING,
       createdBy: DataTypes.BIGINT,
       updatedBy: DataTypes.BIGINT
     },

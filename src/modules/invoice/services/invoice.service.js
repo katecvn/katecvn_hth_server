@@ -1,3 +1,4 @@
+// services/invoice.service.js
 const db = require('../../../models')
 
 const getInvoices = async (data) => {
@@ -8,7 +9,9 @@ const getInvoices = async (data) => {
   if (keyword) {
     conditions[db.Sequelize.Op.or] = [
       { invoiceNumber: { [db.Sequelize.Op.like]: `%${keyword}%` } },
-      { note: { [db.Sequelize.Op.like]: `%${keyword}%` } }
+      { note: { [db.Sequelize.Op.like]: `%${keyword}%` } },
+      { companyName: { [db.Sequelize.Op.like]: `%${keyword}%` } },
+      { companyTaxCode: { [db.Sequelize.Op.like]: `%${keyword}%` } }
     ]
   }
 
@@ -58,7 +61,12 @@ const createInvoice = async (data) => {
     taxAmount,
     totalAmount,
     note,
-    createdBy
+    createdBy,
+    companyName,
+    companyTaxCode,
+    companyAddress,
+    companyEmail,
+    companyPhone
   } = data
 
   const transaction = await db.sequelize.transaction()
@@ -75,6 +83,11 @@ const createInvoice = async (data) => {
         totalAmount,
         status: 'draft',
         note,
+        companyName,
+        companyTaxCode,
+        companyAddress,
+        companyEmail,
+        companyPhone,
         createdBy
       },
       { transaction }
@@ -90,12 +103,23 @@ const createInvoice = async (data) => {
 const updateInvoice = async (id, data, updatedBy) => {
   const invoice = await db.Invoice.findByPk(id)
   if (!invoice) throw new Error('Không tìm thấy hóa đơn')
-
   if (invoice.status !== 'draft') {
     throw new Error('Chỉ có thể chỉnh sửa hóa đơn ở trạng thái nháp (draft)')
   }
 
-  const { subTotal, discountAmount, taxAmount, totalAmount, dueDate, note } = data
+  const {
+    subTotal,
+    discountAmount,
+    taxAmount,
+    totalAmount,
+    dueDate,
+    note,
+    companyName,
+    companyTaxCode,
+    companyAddress,
+    companyEmail,
+    companyPhone
+  } = data
 
   const transaction = await db.sequelize.transaction()
   try {
@@ -107,6 +131,11 @@ const updateInvoice = async (id, data, updatedBy) => {
         totalAmount,
         dueDate,
         note,
+        companyName,
+        companyTaxCode,
+        companyAddress,
+        companyEmail,
+        companyPhone,
         updatedBy
       },
       { transaction }
@@ -125,13 +154,7 @@ const updateStatus = async (id, status, updatedBy) => {
 
   const transaction = await db.sequelize.transaction()
   try {
-    await invoice.update(
-      {
-        status,
-        updatedBy
-      },
-      { transaction }
-    )
+    await invoice.update({ status, updatedBy }, { transaction })
     await transaction.commit()
     return true
   } catch (error) {
