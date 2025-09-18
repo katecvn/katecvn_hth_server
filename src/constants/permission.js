@@ -129,6 +129,8 @@ const PERMISSIONS = {
   // Điểm thưởng
   REWARD: 'reward',
   REWARD_RULE_VIEW: 'reward_rule_view',
+  REWATD_POINT_OVERVIEW_VIEW: 'reward_point_overview_view',
+  REWARD_POINT_HISTORY_LIST_VIEW:'reward_point_history_list_view',
   REWARD_RULE_CREATE: 'reward_rule_create',
   REWARD_RULE_UPDATE: 'reward_rule_update',
   REWARD_RULE_DELETE: 'reward_rule_delete',

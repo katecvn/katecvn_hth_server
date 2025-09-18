@@ -16,10 +16,14 @@ module.exports = {
       { id: 118, parent_id: 113, name: 'reward_history_view', description: 'Xem lịch sử cộng điểm', created_at: timestamp, updated_at: timestamp }
     ]
 
-    const roleHasPermissions = permissions.map((p) => ({
-      role_id: 1,
-      permission_id: p.id
-    }))
+    const roleHasPermissions = [
+      { role_id: 1, permission_id: 113 },
+      { role_id: 1, permission_id: 114 },
+      { role_id: 1, permission_id: 115 },
+      { role_id: 1, permission_id: 116 },
+      { role_id: 1, permission_id: 117 },
+      { role_id: 2, permission_id: 118 }
+    ]
 
     try {
       await queryInterface.bulkInsert('Permissions', permissions, { transaction })
@@ -36,7 +40,7 @@ module.exports = {
     try {
       await queryInterface.bulkDelete(
         'RoleHasPermissions',
-        { role_id: 1, permission_id: { [Sequelize.Op.between]: [113, 118] } },
+        { permission_id: { [Sequelize.Op.between]: [113, 118] } },
         { transaction }
       )
       await queryInterface.bulkDelete(
